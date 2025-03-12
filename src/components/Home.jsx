@@ -8,16 +8,17 @@ const Home = () => {
       {" "}
       {/* 전체 배경색 설정 */}
       {/* Carousel Section */}
-      <div className="max-w-screen-2xl mx-auto min-h-screen bg-white">
+      {/* <div className="max-w-screen-2xl mx-auto min-h-screen bg-white"> */}
+      <div className="max-w-screen-2xl mx-auto h-autu bg-white">
         {/* Carousel 섹션 */}
-        <div className="h-[400px] sm:h-[500px] xl:h-[600px] 2xl:h-[800px] mt-40 px-4 lg:px-14">
-          <Carousel slideInterval={3000}>
+        <div className="h-[300px] sm:h-[400px] xl:h-[600px] 2xl:w-full mt-20 sm:mt-20 lg:mt-36 xl:mt-40 px-4 lg:px-14">
+          <Carousel slideInterval={5000}>
             <img
               src={slide1}
               alt="Slide 1"
               className="w-full h-full object-cover"
             />
-            <img
+            {/* <img
               src="https://picsum.photos/id/1015/1200/600"
               alt="Slide 2"
               className="w-full h-full object-cover"
@@ -26,7 +27,7 @@ const Home = () => {
               src="https://picsum.photos/id/1025/1200/600"
               alt="Slide 3"
               className="w-full h-full object-cover"
-            />
+            /> */}
           </Carousel>
         </div>
 
@@ -34,10 +35,10 @@ const Home = () => {
         <section className="bg-white py-16">
           <div className="max-w-screen-xl mx-auto px-4 lg:px-14 text-center">
             {/* 제목 */}
-            <span className="text-blue-500 text-center text-sm block mb-2 mt-20">
+            <span className="text-blue-400 text-center text-base font-semibold block mb-4 mt-12">
               김주한 교수가 100% 직접 지도하는
             </span>
-            <h2 className="text-xl lg:text-3xl font-bold mb-8 text-gray-800">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-8 text-gray-800 tracking-tight ">
               내면소통명상 기초과정 오픈!
             </h2>
 
@@ -46,7 +47,7 @@ const Home = () => {
               {/* 첫 번째 카드 */}
               <div className="bg-blue-100 p-6 rounded-lg shadow-md flex items-center">
                 <div>
-                  <span className="inline-block bg-blue-500 text-white text-sm px-3 py-1 rounded-full mb-4">
+                  <span className="inline-block  bg-blue-500 text-white font-semibold text-sm px-3 py-1 rounded-full mb-4">
                     내면소통명상 기초과정
                   </span>
                   <h3 className="text-lg font-semibold mb-2">
@@ -64,7 +65,7 @@ const Home = () => {
               {/* 두 번째 카드 */}
               <div className="bg-blue-100 p-6 rounded-lg shadow-md flex items-center">
                 <div>
-                  <span className="inline-block bg-blue-500 text-white text-sm px-3 py-1 rounded-full mb-4">
+                  <span className="inline-block bg-blue-500 text-white font-semibold  text-sm px-3 py-1 rounded-full mb-4">
                     내면소통명상 기초과정
                   </span>
                   <h3 className="text-lg font-semibold mb-2">
@@ -82,24 +83,6 @@ const Home = () => {
           </div>
         </section>
       </div>
-      {/* Footer */}
-      <footer className="py-8 bg-gray-900 w-full">
-        {" "}
-        {/* Footer는 화면 전체 너비로 확장 */}
-        <div className="max-w-screen-xl mx-auto px-4 lg:px-14 text-center text-gray-300 text-sm">
-          내면소통연구소
-          <br />
-          고객센터 | 이용약관 | 개인정보처리방침
-          <br />
-          (주)내면소통연구소 대표: 김주한
-          <br />
-          사업자등록번호: 2025 서울 강남구 남부순환로 2645 4층
-          <br />
-          전화: 010–6650–0945 이메일: official@joohankim.org
-          <br />
-          COPYRIGHT © HULLARO ALL RIGHTS RESERVED.
-        </div>
-      </footer>
     </div>
   );
 };

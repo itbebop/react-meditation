@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import logo from "../assets/logo.png";
+import logo from "../assets/IMA_logo2.svg";
 import { FaXmark, FaBars } from "react-icons/fa6";
 import { FaHome, FaSignInAlt, FaUserPlus, FaRedo } from "react-icons/fa";
 
@@ -44,7 +44,7 @@ const Navbar = () => {
     { link: "홈", path: "home", icon: <FaHome /> },
     { link: "로그인", path: "login", icon: <FaSignInAlt /> },
     { link: "회원가입", path: "signup", icon: <FaUserPlus /> },
-    { link: "캐시삭제", path: "clear-cache", icon: <FaRedo /> },
+    // { link: "캐시삭제", path: "clear-cache", icon: <FaRedo /> },
   ];
 
   return (
@@ -53,41 +53,62 @@ const Navbar = () => {
         isScrollingUp ? "translate-y-0" : "-translate-y-full"
       } ${isSticky ? "bg-white shadow-md" : "bg-transparent"}`}
     >
-      {/* 상단 Nav */}
-      <div className="py-2 border-b border-gray-300">
-        <div className="max-w-screen-2xl mx-auto flex justify-end items-center px-4 lg:px-14 text-sm text-gray-600">
-          {/* 우측 아이템 */}
-          <ul className="flex space-x-6">
-            {topNavItems.map((item, index) => (
-              <li key={index} className="flex items-center space-x-1">
-                {/* 아이콘 항상 표시 */}
-                <span>{item.icon}</span>
-                {/* 텍스트는 md 이상에서만 표시 */}
-                <a
-                  href={`#${item.path}`}
-                  className="hidden md:block hover:text-gray-900 transition-colors whitespace-nowrap"
-                >
-                  {item.link}
-                </a>
-              </li>
-            ))}
-          </ul>
+      {/* 상단 Nav (모바일: 로고 + topNavItems 함께, 데스크톱: 로고 없이 topNavItems 우측 정렬) */}
+      <div className="py-4 border-b border-gray-300">
+        <div className="max-w-screen-2xl mx-auto flex justify-between items-center px-4 lg:px-14 text-sm text-gray-600">
+          {/* 모바일에서는 로고 표시, 데스크톱에서는 숨김 */}
+          <a href="#" className="flex items-center space-x-3 lg:hidden">
+            <img src={logo} alt="Logo" className="w-32 h-auto" />
+
+            {/* <span className="text-xl font-semibold text-[#263238]">
+              내면소통연구소
+            </span> */}
+          </a>
+
+          {/* topNavItems + 햄버거 버튼 (우측 정렬) */}
+          <div className="flex items-center space-x-6 ml-auto">
+            <ul className="flex space-x-6">
+              {topNavItems.map((item, index) => (
+                <li key={index} className="flex items-center space-x-1">
+                  <span>{item.icon}</span>
+                  {/* 텍스트는 lg 이상에서만 표시 */}
+                  <a
+                    href={`#${item.path}`}
+                    className="hidden lg:block hover:text-gray-900 transition-colors whitespace-nowrap"
+                  >
+                    {item.link}
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            {/* 모바일 햄버거 버튼 */}
+            <div className="lg:hidden">
+              <button onClick={toggleMenu}>
+                {isMenuOpen ? (
+                  <FaXmark className="h-6 w-6 text-neutralDGrey" />
+                ) : (
+                  <FaBars className="h-6 w-6 text-neutralDGrey" />
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 메인 Nav */}
-      <nav className="py-4">
+      {/* 메인 Nav (데스크톱에서는 로고 왼쪽, 메뉴 우측) */}
+      <nav className="py-6 hidden lg:block">
         <div className="max-w-screen-2xl mx-auto flex justify-between items-center px-4 lg:px-14 text-base gap-8">
-          {/* 로고 왼쪽 고정 */}
+          {/* 데스크톱에서만 로고 표시 */}
           <a href="#" className="flex items-center space-x-3">
-            <img src={logo} alt="Logo" className="w-10 h-auto" />
-            <span className="text-2xl font-semibold text-[#263238]">
+            <img src={logo} alt="Logo" className=" md:w-40 lg:w-48 h-auto" />
+            {/* <span className="text-2xl font-semibold text-[#263238]">
               내면소통연구소
-            </span>
+            </span> */}
           </a>
 
-          {/* 네비게이션 메뉴 */}
-          <ul className="md:flex space-x-12 hidden">
+          {/* 네비게이션 메뉴 (항상 우측 정렬) */}
+          <ul className="ml-auto flex space-x-12">
             <li>
               <a
                 href="#about"
@@ -101,7 +122,7 @@ const Navbar = () => {
                 href="#lecture"
                 className="text-gray-900 hover:text-brandPrimary text-lg"
               >
-                강의
+                공지사항
               </a>
             </li>
             <li>
@@ -109,7 +130,7 @@ const Navbar = () => {
                 href="#signup"
                 className="text-gray-900 hover:text-brandPrimary text-lg"
               >
-                회원가입
+                강의
               </a>
             </li>
             <li>
@@ -129,32 +150,21 @@ const Navbar = () => {
               </a>
             </li>
           </ul>
-
-          {/* 햄버거 버튼 (모바일) */}
-          <div className="md:hidden">
-            <button onClick={toggleMenu}>
-              {isMenuOpen ? (
-                <FaXmark className="h-6 w-6 text-neutralDGrey" />
-              ) : (
-                <FaBars className="h-6 w-6 text-neutralDGrey" />
-              )}
-            </button>
-          </div>
         </div>
       </nav>
 
       {/* 모바일 네비게이션 메뉴 (오른쪽에서 슬라이드) */}
       <div
-        className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg transform ${
+        className={`fixed top-0 right-0 h-auto w-64 bg-white shadow-lg transform ${
           isMenuOpen ? "translate-x-0" : "translate-x-full"
-        } transition-transform duration-300 ease-in-out md:hidden`}
+        } transition-transform duration-300 ease-in-out lg:hidden`}
       >
         <div className="flex justify-end p-4">
           <button className="text-gray-700 text-2xl" onClick={toggleMenu}>
             <FaXmark />
           </button>
         </div>
-        <ul className="mt-4 space-y-4 px-6">
+        <ul className="mt-4 mb-4 space-y-4 px-6">
           {topNavItems.map((item, index) => (
             <li key={index}>
               <a

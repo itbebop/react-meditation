@@ -1,6 +1,7 @@
 import React from "react";
 import { Carousel } from "flowbite-react";
-import slide1 from "../assets/sample1.png";
+import slide1 from "../assets/slide_image2.jpeg";
+import slide2 from "../assets/slide_image.jpeg";
 
 const Home = () => {
   return (
@@ -9,25 +10,25 @@ const Home = () => {
       {/* 전체 배경색 설정 */}
       {/* Carousel Section */}
       {/* <div className="max-w-screen-2xl mx-auto min-h-screen bg-white"> */}
-      <div className="max-w-screen-2xl mx-auto h-autu bg-white">
+      <div className="max-w-screen-2xl mx-auto h-autu bg-white mt-12">
         {/* Carousel 섹션 */}
-        <div className="h-[300px] sm:h-[400px] xl:h-[600px] 2xl:w-full mt-20 sm:mt-20 lg:mt-36 xl:mt-40 px-4 lg:px-14">
+        <div className="h-[300px] sm:h-[400px] xl:h-[600px] 2xl:w-full mt-20 sm:mt-20 lg:mt-36 xl:mt-44 px-4 lg:px-14">
           <Carousel slideInterval={5000}>
             <img
               src={slide1}
               alt="Slide 1"
               className="w-full h-full object-cover"
             />
-            {/* <img
+            {/* {/* <img
               src="https://picsum.photos/id/1015/1200/600"
               alt="Slide 2"
               className="w-full h-full object-cover"
-            />
+            /> */}
             <img
-              src="https://picsum.photos/id/1025/1200/600"
+              src={slide2}
               alt="Slide 3"
               className="w-full h-full object-cover"
-            /> */}
+            />
           </Carousel>
         </div>
 
@@ -45,9 +46,9 @@ const Home = () => {
             {/* 카드 컨테이너 */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* 첫 번째 카드 */}
-              <div className="bg-blue-100 p-6 rounded-lg shadow-md flex items-center">
+              <div className="bg-[#D9AE46]/65 p-6 rounded-lg shadow-md flex items-center">
                 <div>
-                  <span className="inline-block  bg-blue-500 text-white font-semibold text-sm px-3 py-1 rounded-full mb-4">
+                  <span className="inline-block  bg-[#D9AE46]/50 text-white font-semibold text-sm px-3 py-1 rounded-full mb-4">
                     내면소통명상 기초과정
                   </span>
                   <h3 className="text-lg font-semibold mb-2">
@@ -63,9 +64,9 @@ const Home = () => {
               </div>
 
               {/* 두 번째 카드 */}
-              <div className="bg-blue-100 p-6 rounded-lg shadow-md flex items-center">
+              <div className="bg-[#4AB867]/50 p-6 rounded-lg shadow-md flex items-center">
                 <div>
-                  <span className="inline-block bg-blue-500 text-white font-semibold  text-sm px-3 py-1 rounded-full mb-4">
+                  <span className="inline-block bg-[#4AB867]/65  text-white font-semibold  text-sm px-3 py-1 rounded-full mb-4">
                     내면소통명상 기초과정
                   </span>
                   <h3 className="text-lg font-semibold mb-2">

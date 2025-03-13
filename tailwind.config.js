@@ -12,6 +12,7 @@ export default {
         neutralGrey: "#717171",
         gray800: "#18191F",
         gray900: "#000000",
+        yellowMedi: "#D9AE46",
       },
     },
   },

@@ -114,7 +114,7 @@ const Navbar = () => {
                 href="#about"
                 className="text-gray-900 hover:text-brandPrimary text-lg"
               >
-                기초과정 소개
+                국제명상협회 소개
               </a>
             </li>
             <li>
@@ -122,7 +122,7 @@ const Navbar = () => {
                 href="#lecture"
                 className="text-gray-900 hover:text-brandPrimary text-lg"
               >
-                공지사항
+                교육과정
               </a>
             </li>
             <li>
@@ -130,7 +130,7 @@ const Navbar = () => {
                 href="#signup"
                 className="text-gray-900 hover:text-brandPrimary text-lg"
               >
-                강의
+                수강신청
               </a>
             </li>
             <li>
@@ -138,15 +138,7 @@ const Navbar = () => {
                 href="#faq"
                 className="text-gray-900 hover:text-brandPrimary text-lg"
               >
-                고객센터
-              </a>
-            </li>
-            <li>
-              <a
-                href="#mypage"
-                className="text-gray-900 hover:text-brandPrimary text-lg"
-              >
-                마이페이지
+                F&A
               </a>
             </li>
           </ul>

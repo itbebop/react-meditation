@@ -6,24 +6,16 @@ import slide2 from "../assets/slide_image.jpeg";
 const Home = () => {
   return (
     <div>
-      {" "}
       {/* 전체 배경색 설정 */}
-      {/* Carousel Section */}
-      {/* <div className="max-w-screen-2xl mx-auto min-h-screen bg-white"> */}
-      <div className="max-w-screen-2xl mx-auto h-autu bg-white mt-12">
+      <div className="max-w-screen-2xl mx-auto h-auto bg-white mt-12">
         {/* Carousel 섹션 */}
         <div className="h-[300px] sm:h-[400px] xl:h-[600px] 2xl:w-full mt-20 sm:mt-20 lg:mt-36 xl:mt-44 px-4 lg:px-14">
-          <Carousel slideInterval={5000}>
+          <Carousel slideInterval={5000} leftControl=" " rightControl=" ">
             <img
               src={slide1}
               alt="Slide 1"
               className="w-full h-full object-cover"
             />
-            {/* {/* <img
-              src="https://picsum.photos/id/1015/1200/600"
-              alt="Slide 2"
-              className="w-full h-full object-cover"
-            /> */}
             <img
               src={slide2}
               alt="Slide 3"
@@ -35,9 +27,6 @@ const Home = () => {
         {/* 카드 섹션 */}
         <section className="bg-white py-16">
           <div className="max-w-screen-xl mx-auto px-4 lg:px-14 text-center">
-            {/* <span className="text-blue-400 text-center text-base font-semibold block mb-4 mt-12">
-              김주한 교수가 100% 직접 지도하는
-            </span> */}
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-8 text-gray-800 tracking-tight ">
               내면소통명상 기초과정 오픈!
             </h2>
@@ -47,7 +36,7 @@ const Home = () => {
               {/* 첫 번째 카드 */}
               <div className="bg-[#D9AE46]/65 p-6 rounded-lg shadow-md flex items-center">
                 <div>
-                  <span className="inline-block  bg-[#D9AE46]/50 text-white font-semibold text-sm px-3 py-1 rounded-full mb-4">
+                  <span className="inline-block bg-[#D9AE46]/50 text-white font-semibold text-sm px-3 py-1 rounded-full mb-4">
                     내면소통명상 기초과정
                   </span>
                   <h3 className="text-lg font-semibold mb-2">
@@ -65,7 +54,7 @@ const Home = () => {
               {/* 두 번째 카드 */}
               <div className="bg-[#4AB867]/50 p-6 rounded-lg shadow-md flex items-center">
                 <div>
-                  <span className="inline-block bg-[#4AB867]/65  text-white font-semibold  text-sm px-3 py-1 rounded-full mb-4">
+                  <span className="inline-block bg-[#4AB867]/65 text-white font-semibold text-sm px-3 py-1 rounded-full mb-4">
                     내면소통명상 기초과정
                   </span>
                   <h3 className="text-lg font-semibold mb-2">

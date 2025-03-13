@@ -58,7 +58,7 @@ const Navbar = () => {
         <div className="max-w-screen-2xl mx-auto flex justify-between items-center px-4 lg:px-14 text-sm text-gray-600">
           {/* 모바일에서는 로고 표시, 데스크톱에서는 숨김 */}
           <a href="#" className="flex items-center space-x-3 lg:hidden">
-            <img src={logo} alt="Logo" className="w-32 h-auto" />
+            <img src={logo} alt="Logo" className="w-40 h-auto" />
 
             {/* <span className="text-xl font-semibold text-[#263238]">
               내면소통연구소

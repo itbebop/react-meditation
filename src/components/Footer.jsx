@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="max-w-screen-xl mx-auto px-6 lg:px-14 flex flex-col items-center">
         {/* 로고 및 연구소 이름 */}
         <div className="flex items-center mb-4">
-          <img src={logo} alt="Logo" className="w-40 h-auto mr-3" />
+          <img src={logo} alt="Logo" className="w-32 h-auto mr-3" />
           <div className="text-left text-xs text-gray-400">
             <p>(주)내면소통연구소 대표: 김주한</p>
             <p>

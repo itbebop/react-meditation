@@ -80,7 +80,7 @@ const Navbar = () => {
       } ${isSticky ? "bg-white shadow-md" : "bg-transparent"}`}
     >
       {/* 상단 Nav (모바일: 로고 + topNavItems 함께, 데스크톱: 로고 없이 topNavItems 우측 정렬) */}
-      <div className="py-4 border-b border-gray-300">
+      <div className="py-4 sm:border-b-0 border-gray-300">
         <div className="max-w-screen-2xl mx-auto flex justify-between items-center px-4 lg:px-14 text-sm text-gray-600">
           {/* 모바일에서는 로고 표시, 데스크톱에서는 숨김 */}
           <a href="#" className="flex items-center space-x-3 lg:hidden">

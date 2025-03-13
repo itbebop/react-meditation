@@ -9,7 +9,7 @@ const Home = () => {
       {/* 전체 배경색 설정 */}
       <div className="max-w-screen-2xl mx-auto h-auto bg-white mt-12">
         {/* Carousel 섹션 */}
-        <div className="h-[550px] sm:h-[550px] xl:h-[600px] 2xl:w-full mt-20 sm:mt-20 lg:mt-36 xl:mt-44 px-4 lg:px-14">
+        <div className="h-[550px] sm:h-[550px] xl:h-[600px] 2xl:w-full mt-24 sm:mt-28 lg:mt-36 xl:mt-44 px-4 lg:px-14">
           <Carousel slideInterval={5000} leftControl=" " rightControl=" ">
             <img
               src={slide1}
@@ -32,7 +32,7 @@ const Home = () => {
             </h2>
 
             {/* 카드 컨테이너 */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-14">
               {/* 첫 번째 카드 */}
               <div className="bg-[#D9AE46]/65 p-6 rounded-lg shadow-md flex items-center">
                 <div>

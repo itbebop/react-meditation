@@ -44,17 +44,23 @@ const Navbar = () => {
     {
       link: "홈",
       path: "home",
-      icon: <FaHome className="w-5 sm:w-5 md:w-5  lg:w-4" />,
+      icon: (
+        <FaHome className="w-6 h-6 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-4 lg:h-4" />
+      ),
     },
     {
       link: "로그인",
       path: "login",
-      icon: <FaSignInAlt className="w-5 sm:w-5  md:w-5  lg:w-4" />,
+      icon: (
+        <FaSignInAlt className="w-6 h-6 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-4 lg:h-4" />
+      ),
     },
     {
       link: "회원가입",
       path: "signup",
-      icon: <FaUserPlus className="w-5 sm:w-5 md:w-5  lg:w-4" />,
+      icon: (
+        <FaUserPlus className="w-6 h-6 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-4 lg:h-4" />
+      ),
     },
     // { link: "캐시삭제", path: "clear-cache", icon: <FaRedo /> },
   ];

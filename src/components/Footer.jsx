@@ -8,6 +8,16 @@ const Footer = () => {
         {/* 로고 및 연구소 이름 */}
         <div className="flex items-center mb-4">
           <img src={logo} alt="Logo" className="w-40 h-auto mr-3" />
+          <div className="text-left text-xs text-gray-400">
+            <p>(주)내면소통연구소 대표: 김주한</p>
+            <p>
+              사업자등록번호: 202-08-03058 | 통신판매업허가:
+              제2025-서울강남-00802호
+            </p>
+            <p>사업장주소: 서울 강남구 남부순환로 2645 4층</p>
+            <p>전화: 010-6650-0945 | 이메일: official@joohankim.org</p>
+            <p className="mt-2">COPYRIGHT © HULLARO. ALL RIGHTS RESERVED.</p>
+          </div>
         </div>
 
         {/* 네비게이션 링크 */}
@@ -17,18 +27,6 @@ const Footer = () => {
           <span className="cursor-pointer hover:underline">
             개인정보처리방침
           </span>
-        </div>
-
-        {/* 회사 정보 */}
-        <div className="text-center text-xs text-gray-400">
-          <p>(주)내면소통연구소 대표: 김주한</p>
-          <p>
-            사업자등록번호: 202-08-03058 | 통신판매업허가:
-            제2025-서울강남-00802호
-          </p>
-          <p>사업장주소: 서울 강남구 남부순환로 2645 4층</p>
-          <p>전화: 010-6650-0945 | 이메일: official@joohankim.org</p>
-          <p className="mt-2">COPYRIGHT © HULLARO. ALL RIGHTS RESERVED.</p>
         </div>
       </div>
 

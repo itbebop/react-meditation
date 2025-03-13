@@ -49,7 +49,7 @@ const Navbar = () => {
 
   return (
     <header
-      className={`w-full fixed top-0 left-0 right-0 z-50 transition-transform duration-300 ${
+      className={`w-full fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ${
         isScrollingUp ? "translate-y-0" : "-translate-y-full"
       } ${isSticky ? "bg-white shadow-md" : "bg-transparent"}`}
     >

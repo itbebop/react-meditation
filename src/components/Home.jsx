@@ -35,10 +35,9 @@ const Home = () => {
         {/* 카드 섹션 */}
         <section className="bg-white py-16">
           <div className="max-w-screen-xl mx-auto px-4 lg:px-14 text-center">
-            {/* 제목 */}
-            <span className="text-blue-400 text-center text-base font-semibold block mb-4 mt-12">
+            {/* <span className="text-blue-400 text-center text-base font-semibold block mb-4 mt-12">
               김주한 교수가 100% 직접 지도하는
-            </span>
+            </span> */}
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-8 text-gray-800 tracking-tight ">
               내면소통명상 기초과정 오픈!
             </h2>

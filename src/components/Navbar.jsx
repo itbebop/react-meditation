@@ -48,13 +48,13 @@ const Navbar = () => {
         <FaHome className="w-6 h-6 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-4 lg:h-4" />
       ),
     },
-    {
-      link: "로그인",
-      path: "login",
-      icon: (
-        <FaSignInAlt className="w-6 h-6 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-4 lg:h-4" />
-      ),
-    },
+    // {
+    //   link: "로그인",
+    //   path: "login",
+    //   icon: (
+    //     <FaSignInAlt className="w-6 h-6 sm:w-5 sm:h-5 md:w-5 md:h-5 lg:w-4 lg:h-4" />
+    //   ),
+    // },
     {
       link: "회원가입",
       path: "signup",
@@ -106,7 +106,7 @@ const Navbar = () => {
 
             {/* 모바일 햄버거 버튼 */}
             <div className="lg:hidden">
-              <button onClick={toggleMenu}>
+              <button onClick={toggleMenu} className="relative top-[2px]">
                 {isMenuOpen ? (
                   <FaXmark className="h-6 w-6 text-neutralDGrey" />
                 ) : (

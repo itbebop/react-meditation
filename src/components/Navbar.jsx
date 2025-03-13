@@ -65,6 +65,14 @@ const Navbar = () => {
     // { link: "캐시삭제", path: "clear-cache", icon: <FaRedo /> },
   ];
 
+  // 메인 Nav 아이템
+  const navItems = [
+    { link: "국제명상협회 소개", path: "about" },
+    { link: "교육과정", path: "lecture" },
+    { link: "수강신청", path: "signup" },
+    { link: "F&A", path: "faq" },
+  ];
+
   return (
     <header
       className={`w-full fixed top-0 left-0 right-0 z-50 transition-transform duration-500 ${
@@ -77,10 +85,6 @@ const Navbar = () => {
           {/* 모바일에서는 로고 표시, 데스크톱에서는 숨김 */}
           <a href="#" className="flex items-center space-x-3 lg:hidden">
             <img src={logo} alt="Logo" className="w-40 h-auto" />
-
-            {/* <span className="text-xl font-semibold text-[#263238]">
-              내면소통연구소
-            </span> */}
           </a>
 
           {/* topNavItems + 햄버거 버튼 (우측 정렬) */}
@@ -120,45 +124,20 @@ const Navbar = () => {
           {/* 데스크톱에서만 로고 표시 */}
           <a href="#" className="flex items-center space-x-3">
             <img src={logo} alt="Logo" className=" md:w-40 lg:w-48 h-auto" />
-            {/* <span className="text-2xl font-semibold text-[#263238]">
-              내면소통연구소
-            </span> */}
           </a>
 
           {/* 네비게이션 메뉴 (항상 우측 정렬) */}
           <ul className="ml-auto flex space-x-12">
-            <li>
-              <a
-                href="#about"
-                className="text-gray-900 hover:text-brandPrimary text-lg"
-              >
-                국제명상협회 소개
-              </a>
-            </li>
-            <li>
-              <a
-                href="#lecture"
-                className="text-gray-900 hover:text-brandPrimary text-lg"
-              >
-                교육과정
-              </a>
-            </li>
-            <li>
-              <a
-                href="#signup"
-                className="text-gray-900 hover:text-brandPrimary text-lg"
-              >
-                수강신청
-              </a>
-            </li>
-            <li>
-              <a
-                href="#faq"
-                className="text-gray-900 hover:text-brandPrimary text-lg"
-              >
-                F&A
-              </a>
-            </li>
+            {navItems.map((item, index) => (
+              <li key={index}>
+                <a
+                  href={`#${item.path}`}
+                  className="text-gray-900 hover:text-brandPrimary text-lg"
+                >
+                  {item.link}
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
       </nav>
@@ -175,7 +154,7 @@ const Navbar = () => {
           </button>
         </div>
         <ul className="mt-4 mb-4 space-y-4 px-6">
-          {topNavItems.map((item, index) => (
+          {navItems.map((item, index) => (
             <li key={index}>
               <a
                 href={`#${item.path}`}

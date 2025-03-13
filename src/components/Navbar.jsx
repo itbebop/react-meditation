@@ -41,9 +41,21 @@ const Navbar = () => {
 
   // 상단 Nav 아이템
   const topNavItems = [
-    { link: "홈", path: "home", icon: <FaHome /> },
-    { link: "로그인", path: "login", icon: <FaSignInAlt /> },
-    { link: "회원가입", path: "signup", icon: <FaUserPlus /> },
+    {
+      link: "홈",
+      path: "home",
+      icon: <FaHome className="w-6 h-6 sm:w-6  md:w-6  lg:w-4" />,
+    },
+    {
+      link: "로그인",
+      path: "login",
+      icon: <FaSignInAlt className="w-6 h-6 sm:w-6  md:w-6  lg:w-4" />,
+    },
+    {
+      link: "회원가입",
+      path: "signup",
+      icon: <FaUserPlus className="w-6 h-6 sm:w-6  md:w-6  lg:w-4" />,
+    },
     // { link: "캐시삭제", path: "clear-cache", icon: <FaRedo /> },
   ];
 

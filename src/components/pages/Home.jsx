@@ -1,7 +1,7 @@
 import React from "react";
 import { Carousel } from "flowbite-react";
-import slide1 from "../assets/slide_image2.jpeg";
-import slide2 from "../assets/slide_image.jpeg";
+import slide1 from "../../assets/slide_image2.jpeg";
+import slide2 from "../../assets/slide_image.jpeg";
 
 const Home = () => {
   return (
@@ -52,9 +52,9 @@ const Home = () => {
               </div>
 
               {/* 두 번째 카드 */}
-              <div className="bg-[#4AB867]/50 p-6 rounded-lg shadow-md flex items-center">
+              <div className="bg-lightGreen/50 p-6 rounded-lg shadow-md flex items-center">
                 <div>
-                  <span className="inline-block bg-[#4AB867]/65 text-white font-semibold text-sm px-3 py-1 rounded-full mb-4">
+                  <span className="inline-block bg-lightGreen/65 text-white font-semibold text-sm px-3 py-1 rounded-full mb-4">
                     내면소통명상 기초과정
                   </span>
                   <h3 className="text-lg font-semibold mb-2">

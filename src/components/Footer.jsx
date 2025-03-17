@@ -33,10 +33,10 @@ const Footer = () => {
         {/* 소셜 미디어 아이콘 */}
         <div className="flex space-x-4 mt-6">
           <span className="cursor-pointer hover:opacity-75">
-            <img src={youtube} alt="YouTube" className="w-6 h-6" />
+            <img src={youtube} alt="YouTube" className="w-8 h-8" />
           </span>
           <span className="cursor-pointer hover:opacity-75">
-            <img src={naverCafe} alt="NaverCafe" className="w-6 h-6" />
+            <img src={naverCafe} alt="NaverCafe" className="w-8 h-8" />
           </span>
         </div>
 

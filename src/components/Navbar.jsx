@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import logo from "../assets/IMA_logo2.svg";
 import { FaBars, FaTimes } from "react-icons/fa";
 
@@ -9,6 +9,21 @@ const Navbar = () => {
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  // 화면 크기 변경 감지 및 메뉴 닫기
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMenuOpen(false); // 화면이 커지면 메뉴를 자동으로 닫음
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   // 메인 Nav 아이템
   const navItems = [
@@ -60,7 +75,7 @@ const Navbar = () => {
       <div
         className={`overflow-hidden transition-max-height duration-500 ${
           isMenuOpen ? "max-h-screen" : "max-h-0"
-        } bg-white`}
+        } bg-gray-100`}
       >
         <ul className="px-4 py-6 space-y-4">
           {navItems.map((item, index) => (

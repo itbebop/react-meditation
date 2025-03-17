@@ -75,7 +75,7 @@ const Navbar = () => {
       <div
         className={`overflow-hidden transition-max-height duration-500 ${
           isMenuOpen ? "max-h-screen" : "max-h-0"
-        } bg-gray-100`}
+        } bg-white`}
       >
         <ul className="px-4 py-6 space-y-4">
           {navItems.map((item, index) => (

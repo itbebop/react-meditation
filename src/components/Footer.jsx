@@ -1,43 +1,54 @@
 import React from "react";
-import logo from "../assets/IMA_logo1_dark.svg";
+import youtube from "../assets/youtube_icon.png";
+import naverCafe from "../assets/naver_cafe_icon.png";
 
 const Footer = () => {
   return (
-    <footer className="py-10 bg-gray-900 w-full text-gray-300 text-sm">
-      <div className="max-w-screen-xl mx-auto px-6 lg:px-14 flex flex-col items-center">
-        {/* 로고 및 연구소 이름 */}
-        <div className="flex items-center mb-4">
-          <img src={logo} alt="Logo" className="w-32 h-auto mr-3" />
-          <div className="text-left text-xs text-gray-400">
-            <p>(주)내면소통연구소 대표: 김주한</p>
-            <p>
-              사업자등록번호: 202-08-03058 | 통신판매업허가:
-              제2025-서울강남-00802호
-            </p>
-            <p>사업장주소: 서울 강남구 남부순환로 2645 4층</p>
-            <p>전화: 010-6650-0945 | 이메일: official@joohankim.org</p>
-            <p className="mt-2">COPYRIGHT © HULLARO. ALL RIGHTS RESERVED.</p>
-          </div>
+    <footer className="py-10 bg-gray-100 w-full text-gray-600 text-sm">
+      <div className="max-w-screen-xl mx-auto px-6 lg:px-14">
+        {/* 회사명 */}
+        <div className="text-left text-base font-semibold text-gray-700 mb-2">
+          사단법인 국제명상협회
         </div>
 
-        {/* 네비게이션 링크 */}
-        <div className="flex space-x-6 mb-4">
-          <span className="cursor-pointer hover:underline">고객센터</span>
-          <span className="cursor-pointer hover:underline">이용약관</span>
-          <span className="cursor-pointer hover:underline">
-            개인정보처리방침
+        {/* 회사 정보 */}
+        <div className="text-left text-xs text-gray-500 mb-6">
+          <p>고유번호: 460-82-00606 | 대표자: 김소영</p>
+          {/* <p>통신판매업 신고번호: 제2025-서울강남-00802호</p> */}
+          <p>
+            사업장 주소: 서울특별시 서초구 서래로 15, 402호(반포동, 범산빌딩)
+          </p>
+          <p>전화: 02-6956-1115 | 이메일: official@joohankim.org</p>
+        </div>
+
+        {/* 주요 링크 */}
+        <div className="text-left text-xs text-gray-500 mb-6 space-y-2">
+          <p className="cursor-pointer hover:underline">서비스 이용약관</p>
+          <p className="cursor-pointer hover:underline">개인정보 처리방침</p>
+        </div>
+        <div className="text-left text-base font-semibold cursor-pointer hover:underline text-gray-700 mb-1">
+          Contact Us
+        </div>
+        {/* 소셜 미디어 아이콘 */}
+        {/* 소셜 미디어 아이콘 */}
+        <div className="flex space-x-4 mt-6">
+          <span className="cursor-pointer hover:opacity-75">
+            <img src={youtube} alt="YouTube" className="w-6 h-6" />
+          </span>
+          <span className="cursor-pointer hover:opacity-75">
+            <img src={naverCafe} alt="NaverCafe" className="w-6 h-6" />
           </span>
         </div>
-      </div>
 
-      {/* To Top 버튼 */}
-      <div className="fixed bottom-6 right-6">
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-full shadow-md"
-        >
-          ▲
-        </button>
+        {/* 하단 고정 버튼 */}
+        <div className="fixed bottom-6 right-6">
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-full shadow-md"
+          >
+            ▲
+          </button>
+        </div>
       </div>
     </footer>
   );

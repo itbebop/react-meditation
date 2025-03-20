@@ -22,10 +22,7 @@ const Footer = () => {
         </div>
 
         {/* 주요 링크 */}
-        <div className="text-left text-xs text-gray-500 mb-6 space-y-2">
-          <p className="cursor-pointer hover:underline">서비스 이용약관</p>
-          <p className="cursor-pointer hover:underline">개인정보 처리방침</p>
-        </div>
+
         <div className="text-left text-base font-semibold cursor-pointer hover:underline text-gray-700 mb-1">
           Contact Us
         </div>

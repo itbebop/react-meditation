@@ -5,7 +5,7 @@ const Faq = () => {
   // FAQ 데이터
   const faqData = [
     {
-      category: "About us",
+      category: "수강 / 학습",
       items: [
         {
           question: "How will I manage my business with you?",
@@ -31,7 +31,7 @@ const Faq = () => {
       ],
     },
     {
-      category: "Guest relations",
+      category: "결제 / 환블",
       items: [
         {
           question: "How can I improve guest satisfaction?",

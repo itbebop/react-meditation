@@ -31,7 +31,7 @@ const Faq = () => {
       ],
     },
     {
-      category: "결제 / 환블",
+      category: "결제 / 환불",
       items: [
         {
           question: "How can I improve guest satisfaction?",

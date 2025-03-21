@@ -13,7 +13,7 @@ const Registration = () => {
       </p>
 
       {/* 카드 컨테이너 */}
-      <div className="grid grid-cols-1 gap-4 md:gap-8 max-w-screen-xl mx-auto px-4 md:px-28">
+      <div className="grid grid-cols-1 gap-4 md:gap-8 max-w-screen-xl mx-auto md:px-28">
         {/* 첫 번째 카드 */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden md:mb-4">
           <img

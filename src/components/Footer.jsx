@@ -12,7 +12,7 @@ const Footer = () => {
         </div>
 
         {/* 회사 정보 */}
-        <div className="text-left text-xs text-gray-500 mb-6">
+        <div className="text-left text-xs text-gray-500 mb-2">
           <p>고유번호: 460-82-00606 | 대표자: 김소영</p>
           {/* <p>통신판매업 신고번호: 제2025-서울강남-00802호</p> */}
           <p>
@@ -20,8 +20,6 @@ const Footer = () => {
           </p>
           <p>전화: 02-6956-1115 | 이메일: official@joohankim.org</p>
         </div>
-
-        {/* 주요 링크 */}
 
         <div className="text-left text-base font-semibold cursor-pointer hover:underline text-gray-700 mb-1">
           Contact Us
@@ -38,7 +36,7 @@ const Footer = () => {
         </div>
 
         {/* 하단 고정 버튼 */}
-        <div className="fixed bottom-6 right-6">
+        <div className="fixed bottom-9 right-6">
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             className="bg-gray-700 hover:bg-gray-600 text-white py-2 px-4 rounded-full shadow-md"

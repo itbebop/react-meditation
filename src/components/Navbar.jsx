@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/IMA_logo2.svg";
-import { FaBars, FaTimes } from "react-icons/fa";
+import { Menu, X } from "lucide-react"; // lucide-react 아이콘 사용
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,9 +32,13 @@ const Navbar = () => {
         {/* 햄버거 버튼 */}
         <button
           onClick={toggleMenu}
-          className="text-gray-700 text-2xl lg:hidden focus:outline-none"
+          className="text-gray-700 text-xl lg:hidden focus:outline-none"
         >
-          {isMenuOpen ? <FaTimes /> : <FaBars />}
+          {isMenuOpen ? (
+            <X size={28} strokeWidth={1.5} />
+          ) : (
+            <Menu size={28} strokeWidth={1.5} />
+          )}
         </button>
 
         {/* 데스크톱 네비게이션 */}
@@ -63,7 +67,7 @@ const Navbar = () => {
                 <Link
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-gray-900 hover:text-brandPrimary text-lg"
+                  className="block text-gray-900 hover:text-brandPrimary text-md"
                 >
                   {item.link}
                 </Link>

@@ -40,16 +40,13 @@ const Home = () => {
                   alt="Course Image 1"
                   className="w-full h-48 object-cover"
                 />
-                <div className="p-6">
+                <div className="p-6 text-left">
                   <span className="inline-block bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
                     정규 과정
                   </span>
-                  <h2 className="text-lg font-bold text-gray-800 mb-2">
+                  <h2 className="text-lg font-bold text-gray-800 mb-4">
                     내면소통명상 기초과정 (온라인 과정)
                   </h2>
-                  <p className="text-sm text-gray-600 mb-4">
-                    By Mirko Santangelo
-                  </p>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-8 text-gray-900 font-medium text-sm">
                       {/* 첫 번째 그룹 */}
@@ -82,16 +79,13 @@ const Home = () => {
                   alt="Course Image 2"
                   className="w-full h-48 object-cover"
                 />
-                <div className="p-6">
+                <div className="p-6 text-left">
                   <span className="inline-block bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
                     정규 과정
                   </span>
                   <h2 className="text-lg font-bold text-gray-800 mb-2">
                     내면소통명상 기초과정 (온라인 과정)
                   </h2>
-                  <p className="text-sm text-gray-600 mb-4">
-                    By Mirko Santangelo
-                  </p>
                   <div className="flex justify-between items-center">
                     <div className="flex items-center space-x-8 text-gray-900 font-medium text-sm">
                       {/* 첫 번째 그룹 */}
@@ -117,8 +111,6 @@ const Home = () => {
                 </div>
               </div>
             </div>
-
-            {/* 더보기 버튼 */}
           </div>
         </section>
       </div>

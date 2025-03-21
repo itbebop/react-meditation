@@ -48,7 +48,7 @@ const Navbar = () => {
               <li key={index}>
                 <Link
                   to={item.path}
-                  className="text-gray-900 hover:text-brandPrimary text-base md:text-base"
+                  className="text-gray-900 hover:text-brandPrimary text-base md:text-sm"
                 >
                   {item.link}
                 </Link>
@@ -61,13 +61,13 @@ const Navbar = () => {
       {/* 서랍 메뉴 */}
       {isMenuOpen && (
         <div className="bg-white lg:hidden">
-          <ul className="px-4 py-6 space-y-4">
+          <ul className="px-4 py-6 space-y-6">
             {navItems.map((item, index) => (
               <li key={index}>
                 <Link
                   to={item.path}
                   onClick={() => setIsMenuOpen(false)}
-                  className="block text-gray-900 hover:text-brandPrimary text-md"
+                  className="block text-gray-900 hover:text-brandPrimary text-base"
                 >
                   {item.link}
                 </Link>

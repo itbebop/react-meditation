@@ -28,7 +28,9 @@ const Registration = () => {
             <h2 className="text-lg font-bold text-gray-800 mb-4">
               내면소통명상 기초과정 (온라인 과정)
             </h2>
-            {/* <p className="text-sm text-gray-600 mb-4">By Mirko Santangelo</p> */}
+            <p className="text-sm text-gray-600 mb-4 font-semibold">
+              홍길동 선생
+            </p>
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-8 text-gray-900 font-medium text-sm">
                 {/* 첫 번째 그룹 */}
@@ -47,7 +49,7 @@ const Registration = () => {
                 </span>
               </div>
               {/* 신청 버튼 */}
-              <button className="text-sm bg-neutralGreen text-white px-4 py-2 rounded-lg hover:bg-lightGreen transition-all duration-300">
+              <button className="text-xs bg-neutralGreen text-white px-4 py-2 rounded-lg hover:bg-lightGreen transition-all duration-300">
                 더보기
               </button>
             </div>
@@ -65,10 +67,12 @@ const Registration = () => {
             <span className="inline-block bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
               정규 과정
             </span>
-            <h2 className="text-lg font-bold text-gray-800 mb-4">
+            <h2 className="text-lg font-bold text-gray-800 mb-2">
               내면소통명상 기초과정 (온라인 과정)
             </h2>
-            {/* <p className="text-sm text-gray-600 mb-4">By Mirko Santangelo</p> */}
+            <p className="text-sm text-gray-600 mb-4 font-semibold">
+              홍길동 선생
+            </p>
             <div className="flex justify-between items-center">
               <div className="flex items-center space-x-8 text-gray-900 font-medium text-sm">
                 {/* 첫 번째 그룹 */}
@@ -87,8 +91,8 @@ const Registration = () => {
                 </span>
               </div>
               {/* 신청 버튼 */}
-              <button className="text-sm bg-neutralGreen text-white px-4 py-2 rounded-lg hover:bg-lightGreen transition-all duration-300">
-                더보기
+              <button className="text-xs bg-neutralSilver  px-4 py-2 rounded-lg hover:bg-lightGreen transition-all duration-300">
+                자세히 보기
               </button>
             </div>
           </div>

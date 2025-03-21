@@ -120,13 +120,13 @@ const Faq = () => {
       </div>
 
       {/* FAQ 메뉴와 내용 */}
-      <div className="flex justify-center gap-12 max-w-4xl mx-auto">
+      <div className="flex justify-center gap-12">
         {/* 왼쪽 메뉴 */}
-        <div className="min-w-[12rem]">
+        <div className="w-1/4">
           {faqData.map((category) => (
             <button
               key={category.category}
-              className={`block text-left py-2 px-4 mb-2 rounded text-base font-medium whitespace-nowrap ${
+              className={`block text-left py-2 px-4 mb-2 rounded text-base font-medium ${
                 activeCategory === category.category
                   ? "text-lightGreen"
                   : "text-gray-800 hover:text-neutralGreen"
@@ -139,15 +139,18 @@ const Faq = () => {
         </div>
 
         {/* 오른쪽 FAQ 내용 */}
-        <div className="flex-1">
+        <div className="w-3/4">
           {faqData.map(
             (category) =>
               activeCategory === category.category && (
                 <div key={category.category}>
+                  {/* <h2 className="text-xl font-semibold mb-4">
+                    {category.category}
+                  </h2> */}
                   <ul>
                     {category.items.map((item) => (
                       <li key={item.question} className="mb-4">
-                        {/* 질문 부분 */}
+                        {/* 질문 부분 (배경색 없음) */}
                         <button
                           className="w-full text-left py-2 px-4 flex justify-between items-center hover:bg-gray-50 rounded"
                           onClick={() => toggleQuestion(item.question)}

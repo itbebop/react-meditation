@@ -126,7 +126,7 @@ const Faq = () => {
           {faqData.map((category) => (
             <button
               key={category.category}
-              className={`block text-left py-2 px-4 mb-2 rounded text-base font-medium ${
+              className={`block text-left py-2 px-4 mb-2 rounded text-base font-medium whitespace-nowrap ${
                 activeCategory === category.category
                   ? "text-lightGreen"
                   : "text-gray-800 hover:text-neutralGreen"

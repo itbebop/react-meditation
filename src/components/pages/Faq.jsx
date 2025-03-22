@@ -109,7 +109,7 @@ const Faq = () => {
   };
 
   return (
-    <div id="faq" className="px-8 py-16 mt-10">
+    <div id="faq" className="px-12 py-16 mt-10 max-w-5xl mx-auto">
       {/* FAQ 제목과 설명 */}
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-gray-800">FAQs</h1>
@@ -120,9 +120,9 @@ const Faq = () => {
       </div>
 
       {/* FAQ 메뉴와 내용 */}
-      <div className="flex justify-center gap-12">
+      <div className="flex justify-center gap-16">
         {/* 왼쪽 메뉴 */}
-        <div className="w-1/4">
+        <div className="w-1/3">
           {faqData.map((category) => (
             <button
               key={category.category}
@@ -139,28 +139,24 @@ const Faq = () => {
         </div>
 
         {/* 오른쪽 FAQ 내용 */}
-        <div className="w-3/4">
+        <div className="w-2/3">
           {faqData.map(
             (category) =>
               activeCategory === category.category && (
                 <div key={category.category}>
-                  {/* <h2 className="text-xl font-semibold mb-4">
-                    {category.category}
-                  </h2> */}
                   <ul>
                     {category.items.map((item) => (
                       <li key={item.question} className="mb-4">
-                        {/* 질문 부분 (배경색 없음) */}
+                        {/* 질문 부분 */}
                         <button
-                          className="w-full text-left py-2 px-4 flex justify-between items-center hover:bg-gray-50 rounded"
+                          className="w-full text-left py-2 px-4 flex gap-2 items-center hover:bg-gray-50 rounded"
                           onClick={() => toggleQuestion(item.question)}
                         >
                           <span>{item.question}</span>
-                          {/* 화살표 아이콘 */}
                           {activeQuestion === item.question ? (
-                            <FaChevronUp className="text-gray-500" />
+                            <FaChevronUp className="text-gray-500 ml-auto" />
                           ) : (
-                            <FaChevronDown className="text-gray-500" />
+                            <FaChevronDown className="text-gray-500 ml-auto" />
                           )}
                         </button>
 
@@ -175,6 +171,9 @@ const Faq = () => {
                             ))}
                           </div>
                         )}
+
+                        {/* 구분선 */}
+                        <div className="border-b border-gray-200 mt-4"></div>
                       </li>
                     ))}
                   </ul>

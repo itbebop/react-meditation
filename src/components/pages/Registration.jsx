@@ -66,7 +66,7 @@ const Registration = () => {
                 홍길동 선생
               </p>
               <div className="flex justify-between items-center mb-4">
-                <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
+                <div className="flex items-center space-x-2 md:space-x-4 text-gray-900 font-medium text-sm">
                   <span className="flex items-center space-x-2">
                     <span>강의수</span>
                     <span className="text-gray-400">30강</span>

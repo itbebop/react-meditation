@@ -50,28 +50,6 @@ const Home = () => {
                   <p className="text-sm text-gray-600 mb-4 font-semibold">
                     홍길동 선생
                   </p>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
-                      {/* 첫 번째 그룹 */}
-                      <span className="flex items-center space-x-2">
-                        <span>강의수</span>
-                        <span className="text-gray-400">30강</span>
-                      </span>
-
-                      {/* 구분 기호 */}
-                      <span>|</span>
-
-                      {/* 두 번째 그룹 */}
-                      <span className="flex items-center space-x-2">
-                        <span>이수시간</span>
-                        <span className="text-gray-400">124시간</span>
-                      </span>
-                    </div>
-
-                    <button className="text-xs bg-neutralSilver  px-4 py-2 rounded-lg hover:bg-lightGreen transition-all duration-300">
-                      상세보기
-                    </button>
-                  </div>
                 </div>
               </div>
 
@@ -92,28 +70,6 @@ const Home = () => {
                   <p className="text-sm text-gray-600 mb-4 font-semibold">
                     홍길동 선생
                   </p>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
-                      {/* 첫 번째 그룹 */}
-                      <span className="flex items-center space-x-2">
-                        <span>강의수</span>
-                        <span className="text-gray-400">30강</span>
-                      </span>
-
-                      {/* 구분 기호 */}
-                      <span>|</span>
-
-                      {/* 두 번째 그룹 */}
-                      <span className="flex items-center space-x-2">
-                        <span>이수시간</span>
-                        <span className="text-gray-400">124시간</span>
-                      </span>
-                    </div>
-                    {/* 신청 버튼 */}
-                    <button className="text-xs bg-neutralSilver  px-4 py-2 rounded-lg hover:bg-lightGreen transition-all duration-300">
-                      상세보기
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>

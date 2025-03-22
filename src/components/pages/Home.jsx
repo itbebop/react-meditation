@@ -1,10 +1,18 @@
 import React from "react";
 import { Carousel } from "flowbite-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 import slide1 from "../../assets/slide_image2.jpeg";
 import slide2 from "../../assets/slide_image.jpeg";
 
 const Home = () => {
+  const navigate = useNavigate();
+
+  const handleNavigate = () => {
+    navigate("/registration");
+    window.scrollTo(0, 0);
+  };
+
   return (
     <div>
       {/* 전체 배경색 설정 */}
@@ -34,7 +42,7 @@ const Home = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-screen-xl mx-auto">
               {/* 첫 번째 카드 */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden relative">
                 <img
                   src="https://picsum.photos/id/1012/1200/600"
                   alt="Course Image 1"
@@ -50,11 +58,17 @@ const Home = () => {
                   <p className="text-sm text-gray-600 mb-4 font-semibold">
                     홍길동 선생
                   </p>
+                  <button
+                    onClick={handleNavigate}
+                    className="absolute bottom-10 right-6 p-0"
+                  >
+                    <ArrowRight size={16} />
+                  </button>
                 </div>
               </div>
 
               {/* 두 번째 카드 */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden relative">
                 <img
                   src="https://picsum.photos/id/1015/1200/600"
                   alt="Course Image 2"
@@ -70,17 +84,14 @@ const Home = () => {
                   <p className="text-sm text-gray-600 mb-4 font-semibold">
                     홍길동 선생
                   </p>
+                  <button
+                    onClick={handleNavigate}
+                    className="absolute bottom-10 right-6 p-0"
+                  >
+                    <ArrowRight size={16} />
+                  </button>
                 </div>
               </div>
-            </div>
-
-            {/* 더보기 버튼 추가 */}
-            <div className="mt-8">
-              <Link to="/registration">
-                <button className="w-full md:w-1/2 lg:w-1/3 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-100 transition duration-300">
-                  더보기
-                </button>
-              </Link>
             </div>
           </div>
         </section>

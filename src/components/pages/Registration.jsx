@@ -54,7 +54,7 @@ const Registration = () => {
                 홍길동 선생
               </p>
               <div className="flex justify-between items-center">
-                <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
+                <div className="flex items-center space-x-2 text-gray-900 font-medium text-sm">
                   <span className="flex items-center space-x-2">
                     <span>강의수</span>
                     <span className="text-gray-400">30강</span>
@@ -118,7 +118,13 @@ const Registration = () => {
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            {/* 제목 */}
             <h2 className="text-xl font-bold text-gray-800 mb-4">수강 신청</h2>
+
+            {/* 안내 문구 */}
+            <p className="text-sm text-gray-600 mb-6">
+              기재해주신 연락처로 수강 절차를 안내드리겠습니다.
+            </p>
 
             {/* 입력 폼 */}
             <div className="mb-4">

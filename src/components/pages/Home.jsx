@@ -51,7 +51,7 @@ const Home = () => {
                     홍길동 선생
                   </p>
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-8 text-gray-900 font-medium text-sm">
+                    <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
                       {/* 첫 번째 그룹 */}
                       <span className="flex items-center space-x-2">
                         <span>강의수</span>
@@ -63,13 +63,13 @@ const Home = () => {
 
                       {/* 두 번째 그룹 */}
                       <span className="flex items-center space-x-2">
-                        <span>목차수</span>
-                        <span className="text-gray-400">49개</span>
+                        <span>이수시간</span>
+                        <span className="text-gray-400">124시간</span>
                       </span>
                     </div>
-                    {/* 신청 버튼 */}
-                    <button className="text-xs bg-neutralSilver  px-4 py-2 rounded-full hover:bg-lightGreen transition-all duration-300">
-                      자세히 보기
+
+                    <button className="text-xs bg-neutralSilver  px-4 py-2 rounded-lg hover:bg-lightGreen transition-all duration-300">
+                      상세보기
                     </button>
                   </div>
                 </div>
@@ -93,7 +93,7 @@ const Home = () => {
                     홍길동 선생
                   </p>
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center space-x-8 text-gray-900 font-medium text-sm">
+                    <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
                       {/* 첫 번째 그룹 */}
                       <span className="flex items-center space-x-2">
                         <span>강의수</span>
@@ -105,13 +105,13 @@ const Home = () => {
 
                       {/* 두 번째 그룹 */}
                       <span className="flex items-center space-x-2">
-                        <span>목차수</span>
-                        <span className="text-gray-400">49개</span>
+                        <span>이수시간</span>
+                        <span className="text-gray-400">124시간</span>
                       </span>
                     </div>
                     {/* 신청 버튼 */}
-                    <button className="text-xs bg-neutralGreen text-white px-4 py-2 rounded-full hover:bg-lightGreen transition-all duration-300 ">
-                      더보기
+                    <button className="text-xs bg-neutralSilver  px-4 py-2 rounded-lg hover:bg-lightGreen transition-all duration-300">
+                      상세보기
                     </button>
                   </div>
                 </div>

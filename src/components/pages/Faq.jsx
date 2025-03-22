@@ -47,7 +47,7 @@ const Faq = () => {
       ],
     },
     {
-      category: "One Key™",
+      category: "일곱글자입니다",
       items: [
         {
           question: "What is One Key™?",
@@ -62,7 +62,7 @@ const Faq = () => {
       ],
     },
     {
-      category: "Property listing",
+      category: "여덟개글자입니다",
       items: [
         {
           question: "How do I list my property?",
@@ -77,7 +77,7 @@ const Faq = () => {
       ],
     },
     {
-      category: "Reservations and rates",
+      category: "아홉개의글자입니다",
       items: [
         {
           question: "How do I set competitive rates?",
@@ -109,20 +109,21 @@ const Faq = () => {
   };
 
   return (
-    <div id="faq" className="px-12 py-16 mt-10 max-w-5xl mx-auto">
-      {/* FAQ 제목과 설명 */}
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-gray-800">FAQs</h1>
-        <p className="mt-4 text-gray-600">
-          자주 묻는 질문들입니다. <br />
-          카테고리를 선택해서 해당하는 질문을 선택하세요.
-        </p>
+    <div id="faq" className="px-4 py-16 mt-12 max-w-5xl mx-auto">
+      {/* FAQ 제목과 설명 (왼쪽 1/3 위치) */}
+      <div className="mb-10 max-w-screen-xl mx-auto md:px-4">
+        <div className="w-full">
+          <h1 className="text-3xl font-bold text-gray-800">FAQ</h1>
+          <p className="mt-4 text-gray-600">
+            자주 묻는 질문들입니다. 궁금한 사항을 알아보세요.
+          </p>
+        </div>
       </div>
 
       {/* FAQ 메뉴와 내용 */}
       <div className="flex justify-center gap-16">
         {/* 왼쪽 메뉴 */}
-        <div className="w-1/3">
+        <div className="w-1/4">
           {faqData.map((category) => (
             <button
               key={category.category}

@@ -73,6 +73,15 @@ const Home = () => {
                 </div>
               </div>
             </div>
+
+            {/* 더보기 버튼 추가 */}
+            <div className="mt-8">
+              <Link to="/registration">
+                <button className="w-full md:w-1/2 lg:w-1/3 border border-gray-300 text-gray-700 py-2 px-4 rounded-full hover:bg-gray-100 transition duration-300">
+                  더보기
+                </button>
+              </Link>
+            </div>
           </div>
         </section>
       </div>

@@ -1,13 +1,19 @@
 import React, { useState } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react"; // 페이지네이션 아이콘
-import { FaChevronDown, FaChevronUp } from "react-icons/fa"; // 상세보기 아이콘
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 
 const Registration = () => {
   const [expandedCard, setExpandedCard] = useState(null);
+  const [showPopup, setShowPopup] = useState(false);
 
   // 상세보기 토글 함수
   const handleToggleDetails = (index) => {
     setExpandedCard(expandedCard === index ? null : index);
+  };
+
+  // 팝업 토글 함수
+  const handleTogglePopup = () => {
+    setShowPopup(!showPopup);
   };
 
   return (
@@ -77,57 +83,105 @@ const Registration = () => {
 
             {/* 상세 정보 컨테이너 */}
             <div
-              className={`overflow-hidden transition-all duration-500 ${
+              className={`transition-all duration-500 ${
                 expandedCard === index
-                  ? "max-h-auto p-4 bg-gray-100"
-                  : "max-h-0"
+                  ? "h-auto opacity-100 p-4 bg-gray-100"
+                  : "h-0 opacity-0 overflow-hidden"
               }`}
             >
               <p className="text-sm text-gray-700">
                 이 강의는 내면소통명상의 기초를 배우는 과정입니다. <br />
-                온라인 강의로 언제 어디서나 편하게 수강할 수 있습니다.
+                온라인 강의로 언제 어디서나 편하게 수강할 수 있습니다. <br />
+                <br />
+                ✅ **강의 내용:** <br />
+                - 명상의 기본 원리와 실습 <br />
+                - 내면의 감정과 생각을 정리하는 법 <br />
+                - 명상을 통한 집중력 향상 및 스트레스 관리 <br />
+                - 실전 명상 가이드 및 응용 사례 <br />
+                <br />
+                📅 **강의 일정:** 자유롭게 학습 가능 (온라인)
               </p>
-              <br />
-              <p>1강</p>
-              <p>2강</p>
-              <p>3강</p>
-              <p>4강</p>
-              <p>5강</p>
-              <p>6강</p>
-              <p>7강</p>
-              <p>8강</p>
-              <p>9강</p>
-              <p>10강</p>
+
+              {/* 신청하기 버튼 */}
+              <button
+                className="w-full mt-4 bg-lightGreen text-white font-bold py-2 rounded-lg hover:bg-green-500 transition-all duration-300"
+                onClick={handleTogglePopup}
+              >
+                신청하기
+              </button>
             </div>
           </div>
         ))}
       </div>
 
+      {/* 팝업 (신청 폼) */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96">
+            <h2 className="text-xl font-bold text-gray-800 mb-4">수강 신청</h2>
+
+            {/* 입력 폼 */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                이메일
+              </label>
+              <input
+                type="email"
+                className="w-full p-2 border border-gray-300 rounded mt-1"
+                placeholder="example@email.com"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                이름
+              </label>
+              <input
+                type="text"
+                className="w-full p-2 border border-gray-300 rounded mt-1"
+                placeholder="홍길동"
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                전화번호
+              </label>
+              <input
+                type="tel"
+                className="w-full p-2 border border-gray-300 rounded mt-1"
+                placeholder="010-1234-5678"
+              />
+            </div>
+
+            {/* 버튼 그룹 */}
+            <div className="flex justify-end space-x-2">
+              <button
+                className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all"
+                onClick={handleTogglePopup}
+              >
+                닫기
+              </button>
+              <button className="px-4 py-2 bg-lightGreen text-white rounded-lg hover:bg-green-500 transition-all">
+                보내기
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* 페이지네이션 */}
       <div className="mt-12 flex justify-center items-center space-x-4">
-        <button
-          aria-label="Previous Page"
-          className="text-gray-500 hover:text-neutralGreen transition-all duration-300"
-        >
+        <button className="text-gray-500 hover:text-neutralGreen transition-all duration-300">
           <ChevronLeft size={20} />
         </button>
         {[1, 2, 3, 4, 5].map((page) => (
           <button
             key={page}
-            aria-label={`Go to page ${page}`}
-            className={`font-medium ${
-              page === 1
-                ? "text-neutralGreen"
-                : "text-gray-500 hover:text-neutralGreen"
-            } transition-all duration-300`}
+            className="font-medium text-gray-500 hover:text-neutralGreen transition-all duration-300"
           >
             {page}
           </button>
         ))}
-        <button
-          aria-label="Next Page"
-          className="text-gray-500 hover:text-neutralGreen transition-all duration-300"
-        >
+        <button className="text-gray-500 hover:text-neutralGreen transition-all duration-300">
           <ChevronRight size={20} />
         </button>
       </div>

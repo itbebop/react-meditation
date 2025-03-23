@@ -6,6 +6,9 @@ import Footer from "./components/Footer";
 import Registration from "./components/pages/Registration";
 import Faq from "./components/pages/Faq";
 import About from "./components/pages/About";
+import Login from "./components/pages/admin/Login";
+import Admin from "./components/pages/admin/Admin";
+import ProtectedRoute from "./components/pages/admin/ProtectedRoute";
 
 function App() {
   return (
@@ -19,6 +22,15 @@ function App() {
             <Route path="/lecture" element={<Lecture />} />
             <Route path="/registration" element={<Registration />} />
             <Route path="/faq" element={<Faq />} />
+            <Route path="/admin" element={<Login />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Admin />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </div>
         <Footer />

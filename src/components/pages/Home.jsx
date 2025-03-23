@@ -1,6 +1,6 @@
 import React from "react";
 import { Carousel } from "flowbite-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import slide1 from "../../assets/slide_image2.jpeg";
 import slide2 from "../../assets/slide_image.jpeg";

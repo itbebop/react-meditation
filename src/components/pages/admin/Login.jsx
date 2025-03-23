@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../../firebase/firebase_config";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { Button } from "../../ui/Button";
+// import { Button } from "../../ui/Button";
+import { Button } from "@ui/Button";
 
 export default function Login() {
   const [email, setEmail] = useState("");

@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Button } from "../../ui/Button";
-import { Card, CardContent } from "../../ui/card";
+import { Button } from "@ui/Button";
+import { Card } from "@ui/Card";
+import { CardContent } from "@ui/Card";
 import { Menu, Users, Settings, LogOut } from "lucide-react";
 
 export default function AdminDashboard() {

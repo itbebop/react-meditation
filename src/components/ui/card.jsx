@@ -1,3 +1,4 @@
+// 대소문자 변경
 export function Card({ className = "", children }) {
   return (
     <div className={`bg-white shadow-md rounded-lg ${className}`}>

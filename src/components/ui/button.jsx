@@ -4,6 +4,7 @@ export function Button({
   children,
   ...props
 }) {
+  // 대소문자 변경
   const baseStyles =
     "px-4 py-2 rounded-md text-sm font-medium focus:outline-none transition";
   const variants = {

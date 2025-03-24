@@ -1,6 +1,10 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+} from "firebase/auth"; // 수정된 부분
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
@@ -12,6 +16,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
+
 // Firebase 앱 초기화
 const app = initializeApp(firebaseConfig);
 
@@ -19,5 +24,10 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
+
+// 지속성 설정 추가
+setPersistence(auth, browserLocalPersistence).catch((error) =>
+  console.error("Persistence 설정 실패:", error)
+);
 
 export { auth, db, storage };

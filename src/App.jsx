@@ -13,28 +13,38 @@ import ProtectedRoute from "./components/pages/admin/ProtectedRoute";
 function App() {
   return (
     <Router>
-      <div className="flex flex-col min-h-screen">
-        <Navbar />
-        <div className="flex-grow">
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/lecture" element={<Lecture />} />
-            <Route path="/registration" element={<Registration />} />
-            <Route path="/faq" element={<Faq />} />
-            <Route path="/admin" element={<Login />} />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <Admin />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
-        </div>
-        <Footer />
-      </div>
+      <Routes>
+        {/* Public Routes with Navbar & Footer */}
+        <Route
+          path="/*"
+          element={
+            <div className="flex flex-col min-h-screen">
+              <Navbar />
+              <div className="flex-grow">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/lecture" element={<Lecture />} />
+                  <Route path="/registration" element={<Registration />} />
+                  <Route path="/faq" element={<Faq />} />
+                </Routes>
+              </div>
+              <Footer />
+            </div>
+          }
+        />
+
+        {/* Admin Routes (No Navbar & Footer) */}
+        <Route path="/admin" element={<Login />} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Admin />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
     </Router>
   );
 }

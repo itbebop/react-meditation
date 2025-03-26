@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Outlet,
+} from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Home from "./components/pages/Home";
 import Lecture from "./components/pages/Lecture";
@@ -7,43 +12,48 @@ import Registration from "./components/pages/Registration";
 import Faq from "./components/pages/Faq";
 import About from "./components/pages/About";
 import Login from "./components/pages/admin/Login";
-import Admin from "./components/pages/admin/Admin";
+import Dashboard from "./components/pages/admin/Dashboard";
+import UserManagement from "./components/pages/admin/User";
 import ProtectedRoute from "./components/pages/admin/ProtectedRoute";
+import AdminLayout from "./components/pages/admin/AdminLayout";
+
+// Layout 컴포넌트
+const PublicLayout = () => (
+  <div className="flex flex-col min-h-screen">
+    <Navbar />
+    <div className="flex-grow">
+      <Outlet />
+    </div>
+    <Footer />
+  </div>
+);
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Public Routes with Navbar & Footer */}
-        <Route
-          path="/*"
-          element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <div className="flex-grow">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/lecture" element={<Lecture />} />
-                  <Route path="/registration" element={<Registration />} />
-                  <Route path="/faq" element={<Faq />} />
-                </Routes>
-              </div>
-              <Footer />
-            </div>
-          }
-        />
+        {/* Public routes with layout */}
+        <Route element={<PublicLayout />}>
+          <Route index element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/lecture" element={<Lecture />} />
+          <Route path="/registration" element={<Registration />} />
+          <Route path="/faq" element={<Faq />} />
+        </Route>
 
-        {/* Admin Routes (No Navbar & Footer) */}
+        {/* Admin login */}
         <Route path="/admin" element={<Login />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Admin />
-            </ProtectedRoute>
-          }
-        />
+
+        {/* Protected routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route element={<AdminLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard/users" element={<UserManagement />} />
+          </Route>
+        </Route>
+
+        {/* 404 route */}
+        <Route path="*" element={<div>404 Not Found</div>} />
       </Routes>
     </Router>
   );

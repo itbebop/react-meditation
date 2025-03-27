@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Button } from "@ui/Button";
-import { Menu, Users, Settings, LogOut } from "lucide-react";
+import { Menu, Users, Settings, LogOut, Upload } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../../firebase/firebase_config";
 
@@ -42,6 +42,13 @@ const AdminLayout = () => {
               onClick={() => navigate("/dashboard/users")}
             >
               <Users size={18} /> <span>Users</span>
+            </Button>{" "}
+            <Button
+              variant="ghost"
+              className="w-full text-sm sm:text-base flex items-center space-x-2"
+              onClick={() => navigate("/dashboard/upload")}
+            >
+              <Upload size={18} /> <span>ImageUpload</span>
             </Button>
           </nav>
         </div>

@@ -78,7 +78,7 @@ export default function AdminDashboard() {
               </CardContent>
             </Card>
           </div>
-          <Card>
+          {/* <Card>
             <CardContent className="p-3 sm:p-4">
               <h3 className="text-base sm:text-lg font-semibold">Revenue</h3>
               <p className="text-sm sm:text-base text-gray-600">
@@ -95,7 +95,7 @@ export default function AdminDashboard() {
                 56 active users
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
         </main>
       </div>
     </div>

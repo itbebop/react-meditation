@@ -14,6 +14,7 @@ import About from "./components/pages/About";
 import Login from "./components/pages/admin/Login";
 import Dashboard from "./components/pages/admin/Dashboard";
 import UserManagement from "./components/pages/admin/User";
+import ImageUpload from "./components/pages/admin/ImageUpload";
 import ProtectedRoute from "./components/pages/admin/ProtectedRoute";
 import AdminLayout from "./components/pages/admin/AdminLayout";
 
@@ -49,6 +50,7 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/users" element={<UserManagement />} />
+            <Route path="/dashboard/upload" element={<ImageUpload />} />
           </Route>
         </Route>
 

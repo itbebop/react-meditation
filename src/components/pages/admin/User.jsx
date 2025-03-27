@@ -6,10 +6,11 @@ import {
   updateDoc,
   addDoc,
   getDoc,
+  deleteDoc,
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebase_config";
-import { Edit, Save, Plus } from "lucide-react";
+import { Edit, Save, Plus, Trash2 } from "lucide-react";
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -79,17 +80,40 @@ export default function UserManagement() {
     }
   };
 
+  const handleDeleteSelected = async () => {
+    try {
+      await Promise.all(
+        selectedUsers.map((userId) => deleteDoc(doc(db, "user", userId)))
+      );
+      console.log("Selected users deleted successfully");
+      setSelectedUsers([]);
+      loadUsers();
+    } catch (error) {
+      console.error("Error deleting users:", error);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">User Management</h2>
-        <button
-          onClick={handleAddUser}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-        >
-          <Plus size={18} className="inline mr-2" />
-          Add User
-        </button>
+        <div>
+          <button
+            onClick={handleAddUser}
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2"
+          >
+            <Plus size={18} className="inline mr-2" />
+            Add User
+          </button>
+          <button
+            onClick={handleDeleteSelected}
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+            disabled={selectedUsers.length === 0}
+          >
+            <Trash2 size={18} className="inline mr-2" />
+            Delete Selected
+          </button>
+        </div>
       </div>
 
       <div className="overflow-x-auto">

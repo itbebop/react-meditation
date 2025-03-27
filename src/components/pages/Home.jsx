@@ -40,56 +40,74 @@ const Home = () => {
               내면소통명상 기초과정 오픈!
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-screen-xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:flex lg:justify-center lg:gap-6 max-w-screen-xl mx-auto">
               {/* 첫 번째 카드 */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden relative">
-                <img
-                  src="https://picsum.photos/id/1012/1200/600"
-                  alt="Course Image 1"
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6 text-left">
-                  <span className="inline-block bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
-                    정규 과정
-                  </span>
-                  <h2 className="text-lg font-bold text-gray-800 mb-4">
-                    내면소통명상 기초과정 (온라인 과정)
-                  </h2>
-                  <p className="text-sm text-gray-600 mb-4 font-semibold">
-                    홍길동 선생
-                  </p>
-                  <button
-                    onClick={handleNavigate}
-                    className="absolute bottom-10 right-6 p-0"
-                  >
-                    <ArrowRight size={16} />
-                  </button>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden lg:h-[250px] lg:w-[50%]">
+                <div className="flex flex-col lg:flex-row h-full">
+                  <div className="lg:w-5/12">
+                    <img
+                      src="https://picsum.photos/id/1012/800/600"
+                      alt="Course Image 1"
+                      className="w-full h-48 lg:h-full object-cover"
+                      style={{ aspectRatio: "1.2/1" }}
+                    />
+                  </div>
+                  <div className="lg:w-7/12 p-6 flex flex-col justify-center">
+                    <div className="mt-auto mb-auto">
+                      <span className="inline-block bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
+                        정규 과정
+                      </span>
+                      <h2 className="text-lg lg:text-xl font-bold text-gray-800 mb-4">
+                        내면소통명상 기초과정 (온라인 과정)
+                      </h2>
+                      <p className="text-sm text-gray-600 mb-4 font-semibold">
+                        홍길동 선생
+                      </p>
+                    </div>
+                    <div className="flex justify-end mt-auto">
+                      <button
+                        onClick={handleNavigate}
+                        className="text-gray-600 hover:text-gray-900 transition-colors duration-300"
+                      >
+                        <ArrowRight size={24} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               {/* 두 번째 카드 */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden relative">
-                <img
-                  src="https://picsum.photos/id/1015/1200/600"
-                  alt="Course Image 2"
-                  className="w-full h-48 object-cover"
-                />
-                <div className="p-6 text-left">
-                  <span className="inline-block bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
-                    정규 과정
-                  </span>
-                  <h2 className="text-lg font-bold text-gray-800 mb-2">
-                    내면소통명상 기초과정 (온라인 과정)
-                  </h2>
-                  <p className="text-sm text-gray-600 mb-4 font-semibold">
-                    홍길동 선생
-                  </p>
-                  <button
-                    onClick={handleNavigate}
-                    className="absolute bottom-10 right-6 p-0"
-                  >
-                    <ArrowRight size={16} />
-                  </button>
+              <div className="bg-white rounded-lg shadow-md overflow-hidden lg:h-[250px] lg:w-[50%]">
+                <div className="flex flex-col lg:flex-row h-full">
+                  <div className="lg:w-5/12">
+                    <img
+                      src="https://picsum.photos/id/1015/800/600"
+                      alt="Course Image 2"
+                      className="w-full h-48 lg:h-full object-cover"
+                      style={{ aspectRatio: "1.2/1" }}
+                    />
+                  </div>
+                  <div className="lg:w-7/12 p-6 flex flex-col justify-center">
+                    <div className="mt-auto mb-auto">
+                      <span className="inline-block bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
+                        정규 과정
+                      </span>
+                      <h2 className="text-lg lg:text-xl font-bold text-gray-800 mb-4">
+                        내면소통명상 기초과정 (온라인 과정)
+                      </h2>
+                      <p className="text-sm text-gray-600 mb-4 font-semibold">
+                        홍길동 선생
+                      </p>
+                    </div>
+                    <div className="flex justify-end mt-auto">
+                      <button
+                        onClick={handleNavigate}
+                        className="text-gray-600 hover:text-gray-900 transition-colors duration-300"
+                      >
+                        <ArrowRight size={24} />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

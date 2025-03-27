@@ -1,48 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
-import { getFirestore } from "firebase/firestore";
-import { updatePassword } from "firebase/auth";
-import { auth } from "../../../firebase/firebase_config";
 import {
-  Edit,
-  Save,
-  Trash2,
-  RefreshCw,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
-
-// 날짜 포맷팅 함수
-const formatDate = (date) => {
-  if (!(date instanceof Date)) {
-    date = date.toDate(); // Firestore Timestamp를 Date 객체로 변환
-  }
-  return date.toLocaleString("ko-KR", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-};
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  addDoc,
+  getDoc,
+  serverTimestamp,
+} from "firebase/firestore";
+import { db } from "../../../firebase/firebase_config";
+import { Edit, Save, Plus } from "lucide-react";
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortConfig, setSortConfig] = useState({
-    key: "createdAt",
-    direction: "desc",
-  });
-  const db = getFirestore();
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [editingUser, setEditingUser] = useState(null);
 
-  // 데이터 로드
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
   const loadUsers = async () => {
     try {
-      const querySnapshot = await getDocs(collection(db, "users"));
+      const querySnapshot = await getDocs(collection(db, "user"));
       const userData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
-        editable: false,
         ...doc.data(),
       }));
       setUsers(userData);
@@ -53,49 +36,46 @@ export default function UserManagement() {
     }
   };
 
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  // 정렬 핸들러
-  const handleSort = (key) => {
-    setSortConfig((prev) => ({
-      key,
-      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
-    }));
+  const handleCheckboxChange = (userId) => {
+    setSelectedUsers((prev) =>
+      prev.includes(userId)
+        ? prev.filter((id) => id !== userId)
+        : [...prev, userId]
+    );
   };
 
-  // 정렬된 데이터
-  const sortedUsers = [...users].sort((a, b) => {
-    if (a[sortConfig.key] < b[sortConfig.key])
-      return sortConfig.direction === "asc" ? -1 : 1;
-    if (a[sortConfig.key] > b[sortConfig.key])
-      return sortConfig.direction === "asc" ? 1 : -1;
-    return 0;
-  });
+  const handleEditClick = (user) => {
+    setEditingUser(user);
+  };
 
-  // 필드 업데이트
-  const handleUpdate = async (userId, field, value) => {
+  const handleSaveEdit = async () => {
     try {
-      await updateDoc(doc(db, "users", userId), { [field]: value });
-      setUsers(
-        users.map((user) =>
-          user.id === userId ? { ...user, [field]: value } : user
-        )
-      );
+      const docRef = doc(db, "user", editingUser.id);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        await updateDoc(docRef, editingUser);
+        console.log("Document updated successfully");
+      } else {
+        console.log("No document found with the given ID");
+      }
+      setEditingUser(null);
+      loadUsers();
     } catch (error) {
-      console.error("Update failed:", error);
+      console.error("Error updating user:", error);
     }
   };
 
-  // 패스워드 변경
-  const handlePasswordChange = async (userId, newPassword) => {
+  const handleAddUser = async () => {
     try {
-      const user = auth.currentUser;
-      await updatePassword(user, newPassword);
-      await updateDoc(doc(db, "users", userId), { password: newPassword });
+      const newUser = {
+        email: "새사용자@example.com",
+        role: "user",
+        createdAt: serverTimestamp(),
+      };
+      await addDoc(collection(db, "user"), newUser);
+      loadUsers();
     } catch (error) {
-      console.error("Password update failed:", error);
+      console.error("Error adding user:", error);
     }
   };
 
@@ -104,10 +84,11 @@ export default function UserManagement() {
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">User Management</h2>
         <button
-          onClick={loadUsers}
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600"
+          onClick={handleAddUser}
+          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
         >
-          <RefreshCw size={18} />
+          <Plus size={18} className="inline mr-2" />
+          Add User
         </button>
       </div>
 
@@ -115,58 +96,44 @@ export default function UserManagement() {
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              {[
-                "Email",
-                "Role",
-                "Password",
-                "Created",
-                "Updated",
-                "Actions",
-              ].map((header) => (
-                <th
-                  key={header}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  <div className="flex items-center">
-                    {header}
-                    {["Created", "Updated"].includes(header) && (
-                      <button
-                        onClick={() => handleSort(header.toLowerCase() + "At")}
-                        className="ml-2"
-                      >
-                        {sortConfig.key === header.toLowerCase() + "At" ? (
-                          sortConfig.direction === "asc" ? (
-                            <ChevronUp size={16} />
-                          ) : (
-                            <ChevronDown size={16} />
-                          )
-                        ) : (
-                          <ChevronUp size={16} />
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </th>
-              ))}
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Select
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Role
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Created
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
             </tr>
           </thead>
-
           <tbody className="bg-white divide-y divide-gray-200">
-            {sortedUsers.map((user) => (
+            {users.map((user) => (
               <tr key={user.id}>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {user.editable ? (
+                  <input
+                    type="checkbox"
+                    checked={selectedUsers.includes(user.id)}
+                    onChange={() => handleCheckboxChange(user.id)}
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {editingUser && editingUser.id === user.id ? (
                     <input
                       type="email"
-                      value={user.email}
+                      value={editingUser.email}
                       onChange={(e) =>
-                        setUsers(
-                          users.map((u) =>
-                            u.id === user.id
-                              ? { ...u, email: e.target.value }
-                              : u
-                          )
-                        )
+                        setEditingUser({
+                          ...editingUser,
+                          email: e.target.value,
+                        })
                       }
                       className="border rounded p-1"
                     />
@@ -174,19 +141,12 @@ export default function UserManagement() {
                     user.email
                   )}
                 </td>
-
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {user.editable ? (
+                  {editingUser && editingUser.id === user.id ? (
                     <select
-                      value={user.role}
+                      value={editingUser.role}
                       onChange={(e) =>
-                        setUsers(
-                          users.map((u) =>
-                            u.id === user.id
-                              ? { ...u, role: e.target.value }
-                              : u
-                          )
-                        )
+                        setEditingUser({ ...editingUser, role: e.target.value })
                       }
                       className="border rounded p-1"
                     >
@@ -197,61 +157,26 @@ export default function UserManagement() {
                     user.role
                   )}
                 </td>
-
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {user.editable ? (
-                    <input
-                      type="password"
-                      value={user.password}
-                      onChange={(e) =>
-                        setUsers(
-                          users.map((u) =>
-                            u.id === user.id
-                              ? { ...u, password: e.target.value }
-                              : u
-                          )
-                        )
-                      }
-                      className="border rounded p-1"
-                    />
-                  ) : (
-                    "••••••••"
-                  )}
+                  {user.createdAt?.toDate().toLocaleString() ??
+                    "날짜 정보 없음"}
                 </td>
-
                 <td className="px-6 py-4 whitespace-nowrap">
-                  {formatDate(user.createdAt)}
-                </td>
-
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {formatDate(user.updatedAt)}
-                </td>
-
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="flex space-x-2">
+                  {editingUser && editingUser.id === user.id ? (
                     <button
-                      onClick={() => {
-                        if (user.editable) {
-                          handleUpdate(user.id, "email", user.email);
-                          handleUpdate(user.id, "role", user.role);
-                          handlePasswordChange(user.id, user.password);
-                        }
-                        setUsers(
-                          users.map((u) =>
-                            u.id === user.id
-                              ? { ...u, editable: !u.editable }
-                              : u
-                          )
-                        );
-                      }}
-                      className="p-1 hover:text-blue-600"
+                      onClick={handleSaveEdit}
+                      className="text-green-600 hover:text-green-900"
                     >
-                      {user.editable ? <Save size={18} /> : <Edit size={18} />}
+                      <Save size={18} />
                     </button>
-                    <button className="p-1 hover:text-red-600">
-                      <Trash2 size={18} />
+                  ) : (
+                    <button
+                      onClick={() => handleEditClick(user)}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      <Edit size={18} />
                     </button>
-                  </div>
+                  )}
                 </td>
               </tr>
             ))}

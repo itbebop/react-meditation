@@ -16,6 +16,7 @@ import Dashboard from "./components/pages/admin/Dashboard";
 import UserManagement from "./components/pages/admin/User";
 import ProtectedRoute from "./components/pages/admin/ProtectedRoute";
 import AdminLayout from "./components/pages/admin/AdminLayout";
+import AdminHome from "./components/pages/admin/AdminHome";
 import AdminIntroduce from "./components/pages/admin/AdminIntroduce";
 import AdminLecture from "./components/pages/admin/AdminLecture";
 
@@ -51,6 +52,7 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/users" element={<UserManagement />} />
+            <Route path="/dashboard/home" element={<AdminHome />} />
             <Route path="/dashboard/introduce" element={<AdminIntroduce />} />
             <Route path="/dashboard/lecture" element={<AdminLecture />} />
           </Route>

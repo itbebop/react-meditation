@@ -14,9 +14,10 @@ import About from "./components/pages/About";
 import Login from "./components/pages/admin/Login";
 import Dashboard from "./components/pages/admin/Dashboard";
 import UserManagement from "./components/pages/admin/User";
-import ImageUpload from "./components/pages/admin/ImageUpload";
 import ProtectedRoute from "./components/pages/admin/ProtectedRoute";
 import AdminLayout from "./components/pages/admin/AdminLayout";
+import AdminIntroduce from "./components/pages/admin/AdminIntroduce";
+import AdminLecture from "./components/pages/admin/AdminLecture";
 
 // Layout 컴포넌트
 const PublicLayout = () => (
@@ -50,7 +51,8 @@ function App() {
           <Route element={<AdminLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dashboard/users" element={<UserManagement />} />
-            <Route path="/dashboard/upload" element={<ImageUpload />} />
+            <Route path="/dashboard/introduce" element={<AdminIntroduce />} />
+            <Route path="/dashboard/lecture" element={<AdminLecture />} />
           </Route>
         </Route>
 

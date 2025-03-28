@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { Button } from "@ui/Button";
-import { Menu, Users, Settings, LogOut, Upload } from "lucide-react";
+import { Menu, Users, LogOut, Handshake } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../../firebase/firebase_config";
 
@@ -34,21 +34,28 @@ const AdminLayout = () => {
               className="w-full text-sm sm:text-base flex items-center space-x-2"
               onClick={() => navigate("/dashboard")}
             >
-              <Menu size={18} /> <span>Dashboard</span>
+              <Menu size={18} /> <span>대시보드</span>
             </Button>
             <Button
               variant="ghost"
               className="w-full text-sm sm:text-base flex items-center space-x-2"
               onClick={() => navigate("/dashboard/users")}
             >
-              <Users size={18} /> <span>Users</span>
+              <Users size={18} /> <span>사용자관리</span>
             </Button>{" "}
             <Button
               variant="ghost"
               className="w-full text-sm sm:text-base flex items-center space-x-2"
-              onClick={() => navigate("/dashboard/upload")}
+              onClick={() => navigate("/dashboard/introduce")}
             >
-              <Upload size={18} /> <span>ImageUpload</span>
+              <Handshake size={18} /> <span>협회 소개</span>
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-sm sm:text-base flex items-center space-x-2"
+              onClick={() => navigate("/dashboard/lecture")}
+            >
+              <Handshake size={18} /> <span>교육과정 소개</span>
             </Button>
           </nav>
         </div>

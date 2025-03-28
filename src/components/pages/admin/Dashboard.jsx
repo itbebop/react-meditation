@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@ui/Button";
 import { Card } from "@ui/Card";
 import { CardContent } from "@ui/Card";
-import { Menu, Users, Settings, LogOut } from "lucide-react";
 import { auth } from "../../../firebase/firebase_config";
 import { signOut, onAuthStateChanged } from "firebase/auth";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 
 export default function AdminDashboard() {
-  const [menuOpen, setMenuOpen] = useState(true);
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const [userCount, setUserCount] = useState(0);
@@ -71,9 +68,9 @@ export default function AdminDashboard() {
           >
             <Card>
               <CardContent className="p-3 sm:p-4">
-                <h3 className="text-base sm:text-lg font-semibold">Users</h3>
+                <h3 className="text-base sm:text-lg font-semibold">사용자</h3>
                 <p className="text-sm sm:text-base text-gray-600">
-                  {userCount} registered users
+                  등록된 사용자 {userCount}명
                 </p>
               </CardContent>
             </Card>

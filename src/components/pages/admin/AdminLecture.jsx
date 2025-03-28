@@ -4,9 +4,8 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Button } from "@ui/Button";
 import { Card, CardContent } from "@ui/Card";
 
-export default function ImageUpload() {
+export default function AdminLecture() {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [folderType, setFolderType] = useState("lecture"); // 기본 폴더를 'lecture'로 설정
   const [uploadStatus, setUploadStatus] = useState("");
 
   const handleFileChange = (event) => {
@@ -28,16 +27,12 @@ export default function ImageUpload() {
     setSelectedFile(file);
   };
 
-  const handleFolderChange = (event) => {
-    setFolderType(event.target.value); // 폴더 타입 변경
-  };
-
   const uploadImage = async () => {
     if (!selectedFile) {
       setUploadStatus("파일을 선택하세요.");
       return;
     }
-    const storageRef = ref(storage, `${folderType}/imageFile`);
+    const storageRef = ref(storage, `lecture/imageFile`);
     const uploadTask = uploadBytesResumable(storageRef, selectedFile);
 
     uploadTask.on(
@@ -46,18 +41,16 @@ export default function ImageUpload() {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
         console.log("Upload is " + progress + "% done");
-        setUploadStatus(
-          `${folderType} 이미지 업로드 중: ${progress.toFixed(2)}%`
-        );
+        setUploadStatus(`교육과정 이미지 업로드 중: ${progress.toFixed(2)}%`);
       },
       (error) => {
         console.error("업로드 오류:", error);
-        setUploadStatus(`${folderType} 이미지 업로드 실패: ${error.message}`);
+        setUploadStatus(`교육과정 이미지 업로드 실패: ${error.message}`);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           console.log("파일 다운로드 URL:", downloadURL);
-          setUploadStatus(`${folderType} 이미지 업로드 성공했습니다`);
+          setUploadStatus(`교육과정 이미지 업로드 성공했습니다`);
         });
       }
     );
@@ -65,21 +58,7 @@ export default function ImageUpload() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">이미지 업로드</h2>
-
-      <Card className="mb-6">
-        <CardContent>
-          <h3 className="text-lg font-semibold mb-4">폴더 선택</h3>
-          <select
-            value={folderType}
-            onChange={handleFolderChange}
-            className="mb-4 border rounded p-2"
-          >
-            <option value="introduce">소개</option>
-            <option value="lecture">교육과정</option>
-          </select>
-        </CardContent>
-      </Card>
+      <h2 className="text-2xl font-bold mb-6">교육과정 이미지 업로드</h2>
 
       <Card className="mb-6">
         <CardContent>

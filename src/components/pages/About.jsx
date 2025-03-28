@@ -23,16 +23,18 @@ const About = () => {
     <div id="about" className="px-4 py-16 mt-10">
       <div className="mb-10 max-w-screen-xl mx-auto md:px-4">
         <div className="w-full">
-          <h1 className="text-3xl font-bold text-gray-800">소개 화면</h1>
+          {/* <h1 className="text-3xl font-bold text-gray-800">
+            국제명상협회 소개
+          </h1>
           <p className="mt-4 text-gray-600">
             이곳은 소개 화면입니다. 원하는 내용을 추가하세요.
-          </p>
+          </p> */}
           {/* 이미지 렌더링 */}
           {imageUrl && (
             <img
               src={imageUrl}
               alt="소개 이미지"
-              className="mt-6 w-full  rounded-lg shadow-lg"
+              className="mt-6 w-50  rounded-lg shadow-lg"
             />
           )}
         </div>

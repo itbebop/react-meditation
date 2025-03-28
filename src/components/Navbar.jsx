@@ -1,16 +1,22 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/IMA_logo2.svg";
 import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState("");
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
+  const location = useLocation();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
+
+  useEffect(() => {
+    setActiveMenu(location.pathname);
+  }, [location]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -37,10 +43,19 @@ const Navbar = () => {
     { link: "FAQ", path: "/faq" },
   ];
 
+  const handleMenuClick = (path) => {
+    setActiveMenu(path);
+    setIsMenuOpen(false);
+  };
+
   return (
     <header className="w-full fixed top-0 left-0 right-0 z-50 bg-white shadow-md">
       <div className="max-w-screen-2xl mx-auto flex justify-between items-center px-4 lg:px-14 py-4">
-        <Link to="/" className="flex items-center">
+        <Link
+          to="/"
+          className="flex items-center"
+          onClick={() => setActiveMenu("/")}
+        >
           <img
             src={logo}
             alt="Logo"
@@ -66,7 +81,12 @@ const Navbar = () => {
               <li key={index}>
                 <Link
                   to={item.path}
-                  className="text-gray-900 hover:text-brandPrimary text-base md:text-lg"
+                  onClick={() => handleMenuClick(item.path)}
+                  className={`text-base md:text-lg ${
+                    activeMenu === item.path
+                      ? "text-brandPrimary"
+                      : "text-gray-900 hover:text-brandPrimary"
+                  }`}
                 >
                   {item.link}
                 </Link>
@@ -83,8 +103,12 @@ const Navbar = () => {
               <li key={index}>
                 <Link
                   to={item.path}
-                  onClick={() => setIsMenuOpen(false)}
-                  className="block text-gray-900 hover:text-brandPrimary text-base"
+                  onClick={() => handleMenuClick(item.path)}
+                  className={`block text-base ${
+                    activeMenu === item.path
+                      ? "text-brandPrimary font-semibold"
+                      : "text-gray-900 hover:text-brandPrimary"
+                  }`}
                 >
                   {item.link}
                 </Link>

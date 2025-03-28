@@ -10,10 +10,13 @@ import {
   serverTimestamp,
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebase_config";
+import { getAuth } from "firebase/auth";
 import { Edit, Save, Plus, Trash2 } from "lucide-react";
 
 export default function UserManagement() {
+  const auth = getAuth();
   const [users, setUsers] = useState([]);
+  const currentUserId = auth.currentUser?.uid;
   const [loading, setLoading] = useState(true);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
@@ -146,6 +149,7 @@ export default function UserManagement() {
                     checked={selectedUsers.includes(user.id)}
                     onChange={() => handleCheckboxChange(user.id)}
                     className="form-checkbox h-5 w-5 text-blue-600"
+                    disabled={user.id === currentUserId} // 현재 로그인한 사용자 비활성화
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">

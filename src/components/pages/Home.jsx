@@ -1,12 +1,31 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Carousel } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import slide1 from "../../assets/slide_image2.jpeg";
-import slide2 from "../../assets/slide_image.jpeg";
+import { storage } from "../../firebase/firebase_config"; // Firebase 설정 파일 경로를 확인하세요
+import { ref, getDownloadURL, list } from "firebase/storage";
 
 const Home = () => {
   const navigate = useNavigate();
+  const [carouselImages, setCarouselImages] = useState([]);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const imageUrls = [];
+      for (let i = 1; i <= 5; i++) {
+        try {
+          const url = await getDownloadURL(ref(storage, `home/img${i}`));
+          imageUrls.push(url);
+        } catch (error) {
+          console.error(`Error fetching image ${i}:`, error);
+        }
+      }
+      setCarouselImages(imageUrls.filter((url) => url)); // 빈 URL 제거
+      setIsLoading(false); // ✅ 로딩 완료 후 상태 변경
+    };
+
+    fetchImages();
+  }, []);
 
   const handleNavigate = () => {
     navigate("/registration");
@@ -20,16 +39,20 @@ const Home = () => {
         {/* Carousel 섹션 */}
         <div className="h-[550px] sm:h-[550px] xl:h-[600px] 2xl:w-full mt-24 sm:mt-28 lg:mt-36 xl:mt-44 px-4 lg:px-14">
           <Carousel slideInterval={5000} leftControl=" " rightControl=" ">
-            <img
-              src={slide1}
-              alt="Slide 1"
-              className="w-full h-full object-cover"
-            />
-            <img
-              src={slide2}
-              alt="Slide 2"
-              className="w-full h-full object-cover"
-            />
+            {carouselImages.length > 0 ? (
+              carouselImages.map((imageUrl, index) => (
+                <img
+                  key={index}
+                  src={imageUrl}
+                  alt={`Slide ${index + 1}`}
+                  className="w-full h-full object-cover"
+                />
+              ))
+            ) : (
+              <p className="text-center text-gray-500">
+                이미지를 불러오는 중...
+              </p>
+            )}
           </Carousel>
         </div>
 

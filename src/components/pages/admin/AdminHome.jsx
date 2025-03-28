@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { storage } from "../../../firebase/firebase_config";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+  listAll,
+} from "firebase/storage";
 import { Button } from "@ui/Button";
 import { Card, CardContent } from "@ui/Card";
 
@@ -10,34 +15,40 @@ export default function AdminHome() {
   const [imageUrls, setImageUrls] = useState(Array(5).fill(""));
 
   useEffect(() => {
-    // 컴포넌트 마운트 시 기존 이미지 URL 가져오기
-    const promises = [];
-    for (let i = 0; i < 5; i++) {
-      promises.push(
-        getDownloadURL(ref(storage, `home/img${i + 1}`))
-          .then((url) => {
-            setImageUrls((prev) => {
-              const newUrls = [...prev];
-              newUrls[i] = url;
-              return newUrls;
-            });
-          })
-          .catch((error) => {
-            if (error.code === "storage/object-not-found") {
-              setImageUrls((prev) => {
-                const newUrls = [...prev];
-                newUrls[i] = ""; // 이미지 없음 처리
-                return newUrls;
-              });
-            } else {
-              console.error(`이미지 ${i + 1}를 불러오는 중 오류 발생:`, error);
+    const loadImages = async () => {
+      try {
+        const homeRef = ref(storage, "home");
+        const files = await listAll(homeRef); // Get list of existing files
+        const existingFiles = files.items.map((item) => item.name);
+
+        const promises = Array(5)
+          .fill(null)
+          .map(async (_, i) => {
+            const fileName = `img${i + 1}`;
+            if (existingFiles.includes(fileName)) {
+              try {
+                const url = await getDownloadURL(
+                  ref(storage, `home/${fileName}`)
+                );
+                setImageUrls((prev) => {
+                  const newUrls = [...prev];
+                  newUrls[i] = url;
+                  return newUrls;
+                });
+              } catch (error) {
+                console.error(`이미지 ${i + 1} 불러오기 오류:`, error);
+              }
             }
-          })
-      );
-    }
-    Promise.all(promises).then(() => {
-      console.log("모든 이미지 상태 확인 완료");
-    });
+          });
+
+        await Promise.all(promises);
+        console.log("모든 이미지 상태 확인 완료");
+      } catch (error) {
+        console.error("Firebase 파일 목록 불러오기 실패:", error);
+      }
+    };
+
+    loadImages();
   }, []);
 
   const handleFileChange = (event, index) => {

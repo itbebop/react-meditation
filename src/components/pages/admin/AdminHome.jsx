@@ -13,12 +13,25 @@ export default function AdminHome() {
   const [selectedFiles, setSelectedFiles] = useState(Array(5).fill(null));
   const [uploadStatuses, setUploadStatuses] = useState(Array(5).fill(""));
   const [imageUrls, setImageUrls] = useState(Array(5).fill(""));
+  const [imageSizes, setImageSizes] = useState(Array(5).fill(""));
+
+  const getImageSize = (url, index) => {
+    const img = new Image();
+    img.onload = () => {
+      setImageSizes((prev) => {
+        const newSizes = [...prev];
+        newSizes[index] = `${img.width} x ${img.height}`;
+        return newSizes;
+      });
+    };
+    img.src = url;
+  };
 
   useEffect(() => {
     const loadImages = async () => {
       try {
         const homeRef = ref(storage, "home");
-        const files = await listAll(homeRef); // Get list of existing files
+        const files = await listAll(homeRef);
         const existingFiles = files.items.map((item) => item.name);
 
         const promises = Array(5)
@@ -35,6 +48,7 @@ export default function AdminHome() {
                   newUrls[i] = url;
                   return newUrls;
                 });
+                getImageSize(url, i);
               } catch (error) {
                 console.error(`이미지 ${i + 1} 불러오기 오류:`, error);
               }
@@ -120,6 +134,7 @@ export default function AdminHome() {
             newUrls[index] = downloadURL;
             return newUrls;
           });
+          getImageSize(downloadURL, index);
           setUploadStatuses((prev) => {
             const newStatuses = [...prev];
             newStatuses[index] = `이미지 업로드 성공했습니다`;
@@ -135,33 +150,40 @@ export default function AdminHome() {
       <h2 className="text-2xl font-bold mb-6">홈 이미지 업로드</h2>
 
       {[0, 1, 2, 3, 4].map((index) => (
-        <Card key={index} className="mb-6 flex">
-          <CardContent className="flex-1">
-            <h3 className="text-lg font-semibold mb-4">
-              이미지 {index + 1} (5MB 이하)
-            </h3>
-            <input
-              type="file"
-              onChange={(e) => handleFileChange(e, index)}
-              className="mb-4"
-            />
-            <Button onClick={() => uploadImage(index)}>이미지 업로드</Button>
-            {uploadStatuses[index] && (
-              <div className="mt-4 p-4 bg-gray-100 rounded">
-                <p>{uploadStatuses[index]}</p>
-              </div>
-            )}
-          </CardContent>
-          <div className="w-1/3 flex items-center justify-center">
-            {imageUrls[index] ? (
-              <img
-                src={imageUrls[index]}
-                alt={`Image ${index + 1}`}
-                className="max-w-full max-h-48 object-contain"
+        <Card key={index} className="mb-6">
+          <div className="flex flex-col md:flex-row">
+            <CardContent className="flex-1">
+              <h3 className="text-lg font-semibold mb-4">
+                이미지 {index + 1} (5MB 이하)
+              </h3>
+              <input
+                type="file"
+                onChange={(e) => handleFileChange(e, index)}
+                className="mb-4"
               />
-            ) : (
-              <p>이미지 없음</p>
-            )}
+              <Button onClick={() => uploadImage(index)}>이미지 업로드</Button>
+              {uploadStatuses[index] && (
+                <div className="mt-4 p-4 bg-gray-100 rounded">
+                  <p>{uploadStatuses[index]}</p>
+                </div>
+              )}
+            </CardContent>
+            <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-4">
+              {imageUrls[index] ? (
+                <>
+                  <img
+                    src={imageUrls[index]}
+                    alt={`Image ${index + 1}`}
+                    className="max-w-full max-h-48 object-contain"
+                  />
+                  {imageSizes[index] && (
+                    <p className="mt-2">크기: {imageSizes[index]}</p>
+                  )}
+                </>
+              ) : (
+                <p>이미지 없음</p>
+              )}
+            </div>
           </div>
         </Card>
       ))}

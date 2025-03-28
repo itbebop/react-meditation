@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { Carousel } from "flowbite-react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
-import { storage } from "../../firebase/firebase_config"; // Firebase 설정 파일 경로를 확인하세요
-import { ref, getDownloadURL, list } from "firebase/storage";
+import { storage } from "../../firebase/firebase_config";
+import { ref, getDownloadURL, listAll } from "firebase/storage";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -11,17 +11,24 @@ const Home = () => {
 
   useEffect(() => {
     const fetchImages = async () => {
-      const imageUrls = [];
-      for (let i = 1; i <= 5; i++) {
-        try {
-          const url = await getDownloadURL(ref(storage, `home/img${i}`));
-          imageUrls.push(url);
-        } catch (error) {
-          console.error(`Error fetching image ${i}:`, error);
-        }
+      try {
+        const imagesRef = ref(storage, "home/");
+        const result = await listAll(imagesRef);
+        const urls = await Promise.all(
+          result.items.map(async (item) => {
+            try {
+              return await getDownloadURL(item);
+            } catch (error) {
+              console.error(`Error fetching ${item.name}:`, error);
+              return null;
+            }
+          })
+        );
+
+        setCarouselImages(urls.filter((url) => url !== null)); // 유효한 URL만 저장
+      } catch (error) {
+        console.error("Error listing images:", error);
       }
-      setCarouselImages(imageUrls.filter((url) => url)); // 빈 URL 제거
-      setIsLoading(false); // ✅ 로딩 완료 후 상태 변경
     };
 
     fetchImages();
@@ -34,7 +41,6 @@ const Home = () => {
 
   return (
     <div>
-      {/* 전체 배경색 설정 */}
       <div className="max-w-screen-2xl mx-auto h-auto bg-white mt-12">
         {/* Carousel 섹션 */}
         <div className="h-[550px] sm:h-[550px] xl:h-[600px] 2xl:w-full mt-24 sm:mt-28 lg:mt-36 xl:mt-44 px-4 lg:px-14">

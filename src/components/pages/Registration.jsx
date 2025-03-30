@@ -1,10 +1,39 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../../firebase/firebase_config";
 
 const Registration = () => {
   const [expandedCard, setExpandedCard] = useState(null);
   const [showPopup, setShowPopup] = useState(false);
+  const [lectures, setLectures] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 4;
+
+  // Firestore에서 데이터 가져오기
+  useEffect(() => {
+    const fetchLectures = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "lectures"));
+        const lectureData = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setLectures(lectureData);
+      } catch (error) {
+        console.error("강의 데이터 가져오기 실패:", error);
+      }
+    };
+
+    fetchLectures();
+  }, []);
+
+  // 페이지네이션 계산
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const paginatedLectures = lectures.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(lectures.length / itemsPerPage);
 
   // 상세보기 토글 함수
   const handleToggleDetails = (index) => {
@@ -14,6 +43,11 @@ const Registration = () => {
   // 팝업 토글 함수
   const handleTogglePopup = () => {
     setShowPopup(!showPopup);
+  };
+
+  // 페이지 변경 핸들러
+  const handlePageChange = (newPage) => {
+    setCurrentPage(Math.max(1, Math.min(newPage, totalPages)));
   };
 
   return (
@@ -30,42 +64,58 @@ const Registration = () => {
 
       {/* 카드 컨테이너 */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 max-w-screen-xl mx-auto md:px-28">
-        {[1, 2, 3, 4].map((_, index) => (
+        {paginatedLectures.map((lecture, index) => (
           <div
-            key={index}
+            key={lecture.id}
             className="bg-white rounded-lg shadow-md overflow-hidden"
           >
             <div className="md:flex">
               {/* 카드 이미지 (왼쪽) */}
-              <div className="md:w-1/4">
+              {/* 카드 이미지 (왼쪽) */}
+              <div className="flex-shrink-0 w-full h-52 md:w-72 md:h-52">
                 <img
-                  src={`https://picsum.photos/id/101${index + 2}/800/600`}
-                  alt="Course Image"
-                  className="w-full h-full object-cover"
+                  src={
+                    lecture.imgUrl ||
+                    `https://picsum.photos/id/101${index + 2}/800/600`
+                  }
+                  alt="Course"
+                  className="w-full h-full object-cover rounded-l-lg"
                 />
               </div>
 
               {/* 카드 내용 (오른쪽) */}
               <div className="md:w-3/4 p-6">
-                <span className="inline-block bg-yellow-400 text-white text-xs font-semibold px-3 py-1 rounded-full mb-4">
-                  정규 과정
+                <span
+                  className="inline-block text-white text-xs font-semibold px-3 py-1 rounded-full mb-4"
+                  style={{
+                    backgroundColor:
+                      lecture.categoryColor === 0
+                        ? "#f59e0b"
+                        : `#${lecture.categoryColor}`,
+                  }}
+                >
+                  {lecture.category}
                 </span>
                 <h2 className="text-lg font-bold text-gray-800 mb-2">
-                  내면소통명상 기초과정 (온라인 과정)
+                  {lecture.title}
                 </h2>
                 <p className="text-sm text-gray-600 mb-4 font-semibold">
-                  홍길동 선생
+                  {lecture.lecturer}
                 </p>
                 <div className="flex justify-between items-center mb-4">
                   <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
                     <span className="flex items-center space-x-2">
                       <span>강의수</span>
-                      <span className="text-gray-400">30강</span>
+                      <span className="text-gray-400">
+                        {lecture.lectureNum}강
+                      </span>
                     </span>
                     <span>|</span>
                     <span className="flex items-center space-x-2">
                       <span>이수시간</span>
-                      <span className="text-gray-400">124시간</span>
+                      <span className="text-gray-400">
+                        {lecture.lectureTime}시간
+                      </span>
                     </span>
                   </div>
                   {/* 상세보기 버튼 */}
@@ -86,17 +136,9 @@ const Registration = () => {
 
             {/* 상세 정보 컨테이너 */}
             {expandedCard === index && (
-              <div className="mt-4 bg-gray-100 p-4 rounded-lg mx-6 mb-6">
-                <p className="text-sm text-gray-700">
-                  이 강의는 내면소통명상의 기초를 배우는 과정입니다. <br />
-                  온라인 강의로 언제 어디서나 편하게 수강할 수 있습니다. <br />
-                  <br />✅ <strong>강의 내용:</strong> <br />
-                  - 명상의 기본 원리와 실습 <br />
-                  - 내면의 감정과 생각을 정리하는 법 <br />
-                  - 명상을 통한 집중력 향상 및 스트레스 관리 <br />
-                  - 실전 명상 가이드 및 응용 사례 <br />
-                  <br />
-                  📅 <strong>강의 일정:</strong> 자유롭게 학습 가능 (온라인)
+              <div className="bg-gray-100 p-4 rounded-lg mt-4 mx-6 mb-6">
+                <p className="text-sm text-gray-700 whitespace-pre-line">
+                  {lecture.detail}
                 </p>
 
                 {/* 신청하기 버튼 */}
@@ -174,18 +216,29 @@ const Registration = () => {
 
       {/* 페이지네이션 */}
       <div className="mt-12 flex justify-center items-center space-x-4">
-        <button className="text-gray-500 hover:text-neutralGreen transition-all duration-300">
+        <button
+          className="text-gray-500 hover:text-neutralGreen transition-all duration-300"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+        >
           <ChevronLeft size={20} />
         </button>
-        {[1, 2, 3, 4, 5].map((page) => (
+        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
           <button
             key={page}
-            className="font-medium text-gray-500 hover:text-neutralGreen transition-all duration-300"
+            className={`font-medium ${
+              page === currentPage ? "text-neutralGreen" : "text-gray-500"
+            } hover:text-neutralGreen transition-all duration-300`}
+            onClick={() => handlePageChange(page)}
           >
             {page}
           </button>
         ))}
-        <button className="text-gray-500 hover:text-neutralGreen transition-all duration-300">
+        <button
+          className="text-gray-500 hover:text-neutralGreen transition-all duration-300"
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+        >
           <ChevronRight size={20} />
         </button>
       </div>

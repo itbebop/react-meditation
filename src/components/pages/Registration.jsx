@@ -20,6 +20,14 @@ const Registration = () => {
           id: doc.id,
           ...doc.data(),
         }));
+
+        // 수정된 부분: lectureId를 기준으로 정렬
+        lectureData.sort((a, b) => {
+          const numA = parseInt(a.lectureId.split("-")[1], 10); // LEC 뒤 숫자 추출
+          const numB = parseInt(b.lectureId.split("-")[1], 10); // LEC 뒤 숫자 추출
+          return numA - numB; // 오름차순 정렬
+        });
+
         setLectures(lectureData);
       } catch (error) {
         console.error("강의 데이터 가져오기 실패:", error);

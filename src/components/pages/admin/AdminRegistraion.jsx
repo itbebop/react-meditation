@@ -10,7 +10,7 @@ import {
 } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../firebase/firebase_config";
-import { Edit, Save, Plus, Trash2, X } from "lucide-react"; // X 아이콘 추가
+import { Edit, Save, Plus, Trash2, X, GripVertical } from "lucide-react"; // X 아이콘 추가
 
 export default function AdminRegistration() {
   const [lectures, setLectures] = useState([]);
@@ -19,20 +19,29 @@ export default function AdminRegistration() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [previewImageId, setPreviewImageId] = useState(null); // 이미지 미리보기 상태 관리
   const [imageSizes, setImageSizes] = useState({});
+  const [draggingLectureId, setDraggingLectureId] = useState(null); // 드래그 앤 드롭 상태 추가
+  const [hasOrderChanged, setHasOrderChanged] = useState(false);
+  const [modifiedLectures, setModifiedLectures] = useState([]);
 
   useEffect(() => {
     loadLectures();
   }, []);
 
+  // 강의 데이터를 불러오고 오름차순 정렬
   const loadLectures = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "lectures"));
       const lectureData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        // Firestore Timestamp를 JavaScript Date로 변환
         createdAt: doc.data().createdAt?.toDate() || null,
       }));
+      // 수정된 부분: LEC 뒤 숫자에 따라 오름차순 정렬
+      lectureData.sort((a, b) => {
+        const numA = parseInt(a.lectureId.split("-")[1], 10);
+        const numB = parseInt(b.lectureId.split("-")[1], 10);
+        return numA - numB;
+      });
       setLectures(lectureData);
     } catch (error) {
       console.error("Error loading lectures:", error);
@@ -50,13 +59,14 @@ export default function AdminRegistration() {
   const handleEditClick = (lecture) => {
     setEditingLecture(lecture);
   };
-  // 임시 ID 생성기
-  const generateTempId = () => `temp-${Date.now()}`;
-  // 강의 추가 핸들러 수정
+
+  // 강의 추가 버튼 클릭 시 ID 자동 생성
   const handleAddLecture = () => {
+    // 수정된 부분: LEC-${index} 형식으로 ID 생성
+    const newLectureId = `LEC-${lectures.length}`;
     const newLecture = {
-      id: `temp-${Date.now()}`, // 임시 ID 생성
-      lectureId: `LEC-${Date.now()}`,
+      id: `temp-${Date.now()}`,
+      lectureId: newLectureId,
       category: "정규 과정",
       categoryColor: "#f59e0b",
       title: "새 강의 제목",
@@ -65,11 +75,48 @@ export default function AdminRegistration() {
       lectureTime: 0,
       detail: "강의 상세 설명",
       imgUrl: "",
-      isNew: true, // 새 항목 표시
-      createdAt: null, // 생성일 초기값 설정
+      isNew: true,
+      createdAt: null,
     };
     setLectures((prev) => [...prev, newLecture]);
     setEditingLecture(newLecture);
+  };
+
+  // 드래그 시작
+  const handleDragStart = (lectureId) => {
+    setDraggingLectureId(lectureId); // 수정된 부분: 드래그 상태 저장
+  };
+  // 드롭 처리 및 순서 변경
+  const handleDrop = (targetLectureId) => {
+    if (!draggingLectureId || draggingLectureId === targetLectureId) return;
+
+    const draggedIndex = lectures.findIndex(
+      (lecture) => lecture.id === draggingLectureId
+    );
+    const targetIndex = lectures.findIndex(
+      (lecture) => lecture.id === targetLectureId
+    );
+
+    const updatedLectures = [...lectures];
+    [updatedLectures[draggedIndex], updatedLectures[targetIndex]] = [
+      updatedLectures[targetIndex],
+      updatedLectures[draggedIndex],
+    ];
+
+    // ID 재생성 및 변경 상태 추적
+    const modifiedIds = [];
+    updatedLectures.forEach((lecture, index) => {
+      const newId = `LEC-${index}`;
+      if (lecture.lectureId !== newId) {
+        modifiedIds.push(lecture.id);
+        lecture.lectureId = newId;
+      }
+    });
+
+    setLectures(updatedLectures);
+    setHasOrderChanged(modifiedIds.length > 0);
+    setModifiedLectures(modifiedIds);
+    setDraggingLectureId(null);
   };
 
   // 취소 버튼 핸들러
@@ -294,13 +341,13 @@ export default function AdminRegistration() {
             onClick={handleSaveEdit}
             className="flex items-center justify-center bg-green-500 text-white rounded-lg p-4 hover:bg-green-600 transition-all duration-300"
           >
-            <Save size={18} /> {/* 크기를 3배로 키움 */}
+            <Save size={18} />
           </button>
           <button
             onClick={handleCancel}
             className="flex items-center justify-center bg-red-500 text-white rounded-lg p-4 hover:bg-red-600 transition-all duration-300"
           >
-            <X size={18} /> {/* 크기를 3배로 키움 */}
+            <X size={18} />
           </button>
         </>
       ) : (
@@ -311,6 +358,20 @@ export default function AdminRegistration() {
           <Edit size={18} />
         </button>
       )}
+      {/* 수정된 부분: 드래그 버튼 추가 */}
+      <button
+        draggable
+        onDragStart={() => handleDragStart(lecture.id)}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={() => handleDrop(lecture.id)}
+        className={`cursor-move ${
+          modifiedLectures.includes(lecture.id)
+            ? "text-red-500 hover:text-red-700"
+            : "text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        <GripVertical size={28} />
+      </button>
     </td>
   );
 
@@ -340,6 +401,25 @@ export default function AdminRegistration() {
         )}
       </td>
     );
+  };
+
+  const handleSaveOrder = async () => {
+    try {
+      const batchUpdates = lectures.map((lecture) =>
+        updateDoc(doc(db, "lectures", lecture.id), {
+          lectureId: lecture.lectureId,
+        })
+      );
+
+      await Promise.all(batchUpdates);
+      setHasOrderChanged(false);
+      setModifiedLectures([]);
+      loadLectures(); // 변경 사항 반영을 위해 데이터 재조회
+      alert("순서가 성공적으로 저장되었습니다.");
+    } catch (error) {
+      console.error("순서 저장 실패:", error);
+      alert("순서 저장에 실패했습니다: " + error.message);
+    }
   };
 
   return (
@@ -405,6 +485,16 @@ export default function AdminRegistration() {
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 작업
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                {hasOrderChanged && (
+                  <button
+                    onClick={handleSaveOrder}
+                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded ml-2"
+                  >
+                    순서 저장
+                  </button>
+                )}
               </th>
             </tr>
           </thead>

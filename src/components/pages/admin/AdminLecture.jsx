@@ -9,6 +9,7 @@ export default function AdminLecture() {
   const [uploadStatus, setUploadStatus] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [imageSize, setImageSize] = useState("");
+  const [isImageExpanded, setIsImageExpanded] = useState(false); // 이미지 확장 상태 추가
 
   // 이미지 크기 확인 함수
   const getImageSize = (url) => {
@@ -76,6 +77,11 @@ export default function AdminLecture() {
     );
   };
 
+  // 이미지 확장 토글 함수
+  const toggleImageExpand = () => {
+    setIsImageExpanded((prev) => !prev);
+  };
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">교육과정 이미지 업로드</h2>
@@ -97,12 +103,27 @@ export default function AdminLecture() {
           <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-4">
             {imageUrl ? (
               <>
-                <img
-                  src={imageUrl}
-                  alt="교육과정 이미지"
-                  className="max-w-full max-h-80 object-contain"
-                />
-                {imageSize && <p className="mt-2">크기: {imageSize}</p>}
+                {/* 이미지 보기/접기 버튼 */}
+                <button
+                  onClick={toggleImageExpand}
+                  className="text-blue-500 underline mb-2"
+                >
+                  {isImageExpanded ? "이미지 접기" : "이미지 보기"}
+                </button>
+
+                {/* 조건부 렌더링으로 이미지 표시 */}
+                {isImageExpanded && (
+                  <>
+                    <img
+                      src={imageUrl}
+                      alt="교육과정 이미지"
+                      className="max-w-full max-h-80 object-contain"
+                    />
+                    {imageSize && (
+                      <p className="mt-2 text-gray-500">크기: {imageSize}</p>
+                    )}
+                  </>
+                )}
               </>
             ) : (
               <p className="text-gray-500">이미지 없음</p>

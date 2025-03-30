@@ -14,6 +14,7 @@ export default function AdminHome() {
   const [uploadStatuses, setUploadStatuses] = useState(Array(5).fill(""));
   const [imageUrls, setImageUrls] = useState(Array(5).fill(""));
   const [imageSizes, setImageSizes] = useState(Array(5).fill(""));
+  const [expandedImages, setExpandedImages] = useState(Array(5).fill(false)); // 이미지 확장 상태 관리
 
   const getImageSize = (url, index) => {
     const img = new Image();
@@ -145,6 +146,15 @@ export default function AdminHome() {
     );
   };
 
+  // 이미지 확장 토글 함수
+  const toggleImageExpand = (index) => {
+    setExpandedImages((prev) => {
+      const newExpandedStates = [...prev];
+      newExpandedStates[index] = !newExpandedStates[index];
+      return newExpandedStates;
+    });
+  };
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">홈 이미지 업로드</h2>
@@ -171,13 +181,23 @@ export default function AdminHome() {
             <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-4">
               {imageUrls[index] ? (
                 <>
-                  <img
-                    src={imageUrls[index]}
-                    alt={`Image ${index + 1}`}
-                    className="max-w-full max-h-48 object-contain"
-                  />
-                  {imageSizes[index] && (
-                    <p className="mt-2">크기: {imageSizes[index]}</p>
+                  <button
+                    onClick={() => toggleImageExpand(index)}
+                    className="text-blue-500 underline mb-2"
+                  >
+                    {expandedImages[index] ? "이미지 접기" : "이미지 보기"}
+                  </button>
+                  {expandedImages[index] && (
+                    <>
+                      <img
+                        src={imageUrls[index]}
+                        alt={`Image ${index + 1}`}
+                        className="max-w-full max-h-48 object-contain"
+                      />
+                      {imageSizes[index] && (
+                        <p className="mt-2">크기: {imageSizes[index]}</p>
+                      )}
+                    </>
                   )}
                 </>
               ) : (

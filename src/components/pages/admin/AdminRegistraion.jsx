@@ -57,8 +57,8 @@ export default function AdminRegistration() {
     const newLecture = {
       id: `temp-${Date.now()}`, // 임시 ID 생성
       lectureId: `LEC-${Date.now()}`,
-      category: "기본 카테고리",
-      categoryColor: 0,
+      category: "정규 과정",
+      categoryColor: "#f59e0b",
       title: "새 강의 제목",
       lecturer: "강사 이름",
       lectureNum: 0,
@@ -146,7 +146,7 @@ export default function AdminRegistration() {
       let lectureData = {
         lectureId: updatedLecture.lectureId,
         category: updatedLecture.category,
-        categoryColor: Number(updatedLecture.categoryColor),
+        categoryColor: updatedLecture.categoryColor,
         title: updatedLecture.title,
         lecturer: updatedLecture.lecturer,
         lectureNum: Number(updatedLecture.lectureNum),
@@ -202,27 +202,65 @@ export default function AdminRegistration() {
   // 테이블에 이미지 컬럼 추가
   const renderImageColumn = (lecture) => (
     <td className="px-6 py-4 whitespace-nowrap">
-      <button
-        onClick={() => toggleImagePreview(lecture.id)}
-        className="text-blue-500 underline"
-      >
-        {previewImageId === lecture.id ? "이미지 접기" : "이미지 보기"}
-      </button>
-      {previewImageId === lecture.id && lecture.imgUrl && (
-        <div className="mt-2">
-          <img
-            src={lecture.imgUrl}
-            alt={`강의 이미지`}
-            className="w-32 h-32 object-cover rounded"
+      {editingLecture?.id === lecture.id ? (
+        // 편집 모드에서 이미지 업로드 필드 표시
+        <div className="flex flex-col gap-2">
+          <input
+            type="file"
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) {
+                setEditingLecture({
+                  ...editingLecture,
+                  newImageFile: file, // 새 이미지 파일 저장
+                  imgUrl: URL.createObjectURL(file), // 미리보기 URL 생성
+                });
+              }
+            }}
+            className="mb-2"
           />
-          {imageSizes[lecture.id] && (
-            <p className="text-gray-500 text-sm mt-2">
-              이미지 크기: {imageSizes[lecture.id]}
-            </p>
+          {editingLecture.imgUrl && (
+            <div>
+              <img
+                src={editingLecture.imgUrl}
+                alt="미리보기 이미지"
+                className="w-32 h-32 object-cover rounded"
+              />
+              <p className="text-gray-500 text-sm mt-2">
+                새 이미지가 선택되었습니다.
+              </p>
+            </div>
           )}
         </div>
+      ) : lecture.imgUrl ? (
+        <>
+          {/* 이미지 보기/접기 버튼 */}
+          <button
+            onClick={() => toggleImagePreview(lecture.id)}
+            className="text-blue-500 underline"
+          >
+            {previewImageId === lecture.id ? "이미지 접기" : "이미지 보기"}
+          </button>
+
+          {/* 조건부 렌더링으로 이미지 표시 */}
+          {previewImageId === lecture.id && (
+            <div className="mt-2">
+              <img
+                src={lecture.imgUrl}
+                alt={`강의 이미지`}
+                className="w-32 h-32 object-cover rounded"
+              />
+              {imageSizes[lecture.id] && (
+                <p className="text-gray-500 text-sm mt-2">
+                  이미지 크기: {imageSizes[lecture.id]}
+                </p>
+              )}
+            </div>
+          )}
+        </>
+      ) : (
+        <span className="text-gray-500">이미지 없음</span>
       )}
-      {!lecture.imgUrl && <span className="text-gray-500">이미지 없음</span>}
     </td>
   );
 
@@ -386,16 +424,11 @@ export default function AdminRegistration() {
                 {/* 수정된 렌더링 함수 호출 */}
                 {renderEditableCell(lecture, "lectureId", "강의 ID")}
                 {renderEditableCell(lecture, "category", "카테고리")}
-                {renderEditableCell(
-                  lecture,
-                  "categoryColor",
-                  "색상코드",
-                  "number"
-                )}
+                {renderEditableCell(lecture, "categoryColor", "색상코드")}
                 {renderEditableCell(lecture, "title", "제목")}
                 {renderEditableCell(lecture, "lecturer", "강사")}
-                {renderEditableCell(lecture, "lectureNum", "횟수", "number")}
-                {renderEditableCell(lecture, "lectureTime", "시간", "number")}
+                {renderEditableCell(lecture, "lectureNum", "0", "number")}
+                {renderEditableCell(lecture, "lectureTime", "0", "number")}
                 {/* 상세 설명 컬럼 */}
                 {renderDetailCell(lecture)}
                 {/* 이미지 컬럼 */}

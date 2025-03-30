@@ -88,10 +88,7 @@ const Registration = () => {
                 <span
                   className="inline-block text-white text-xs font-semibold px-3 py-1 rounded-full mb-4"
                   style={{
-                    backgroundColor:
-                      lecture.categoryColor === 0
-                        ? "#f59e0b"
-                        : `#${lecture.categoryColor}`,
+                    backgroundColor: lecture.categoryColor || "#f59e0b",
                   }}
                 >
                   {lecture.category}

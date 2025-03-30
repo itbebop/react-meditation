@@ -8,6 +8,7 @@ import { ref, getDownloadURL, listAll } from "firebase/storage";
 const Home = () => {
   const navigate = useNavigate();
   const [carouselImages, setCarouselImages] = useState([]);
+  const [isLoading, setIsLoading] = useState(true); // 로딩 상태 추가
 
   useEffect(() => {
     const fetchImages = async () => {
@@ -26,8 +27,10 @@ const Home = () => {
         );
 
         setCarouselImages(urls.filter((url) => url !== null)); // 유효한 URL만 저장
+        setIsLoading(false); // 로딩 완료
       } catch (error) {
         console.error("Error listing images:", error);
+        setIsLoading(false); // 로딩 실패 시에도 상태 업데이트
       }
     };
 
@@ -44,22 +47,22 @@ const Home = () => {
       <div className="max-w-screen-2xl mx-auto h-auto bg-white mt-12">
         {/* Carousel 섹션 */}
         <div className="h-[550px] sm:h-[550px] xl:h-[600px] 2xl:w-full mt-24 sm:mt-28 lg:mt-36 xl:mt-44 px-4 lg:px-14">
-          <Carousel slideInterval={5000} leftControl=" " rightControl=" ">
-            {carouselImages.length > 0 ? (
-              carouselImages.map((imageUrl, index) => (
+          {isLoading ? (
+            <p className="text-center text-gray-500"></p>
+          ) : carouselImages.length > 0 ? (
+            <Carousel slideInterval={5000} leftControl=" " rightControl=" ">
+              {carouselImages.map((imageUrl, index) => (
                 <img
                   key={index}
                   src={imageUrl}
                   alt={`Slide ${index + 1}`}
                   className="w-full h-full object-cover"
                 />
-              ))
-            ) : (
-              <p className="text-center text-gray-500">
-                이미지를 불러오는 중...
-              </p>
-            )}
-          </Carousel>
+              ))}
+            </Carousel>
+          ) : (
+            <p className="text-center text-gray-500">이미지가 없습니다.</p>
+          )}
         </div>
 
         {/* 카드 섹션 */}

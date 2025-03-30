@@ -17,6 +17,8 @@ export default function AdminRegistration() {
   const [selectedLectures, setSelectedLectures] = useState([]);
   const [editingLecture, setEditingLecture] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [previewImageId, setPreviewImageId] = useState(null); // 이미지 미리보기 상태 관리
+  const [imageSizes, setImageSizes] = useState({});
 
   useEffect(() => {
     loadLectures();
@@ -179,45 +181,48 @@ export default function AdminRegistration() {
     }
   };
 
+  const toggleImagePreview = (id) => {
+    setPreviewImageId((prevId) => (prevId === id ? null : id));
+    if (!imageSizes[id]) {
+      getImageSize(lectures.find((lecture) => lecture.id === id).imgUrl, id);
+    }
+  };
+
+  const getImageSize = (url, id) => {
+    const img = new Image();
+    img.onload = () => {
+      setImageSizes((prev) => ({
+        ...prev,
+        [id]: `${img.width} x ${img.height}`,
+      }));
+    };
+    img.src = url;
+  };
+
   // 테이블에 이미지 컬럼 추가
   const renderImageColumn = (lecture) => (
     <td className="px-6 py-4 whitespace-nowrap">
-      {editingLecture?.id === lecture.id ? (
-        <div className="flex flex-col gap-2">
-          <input
-            type="file"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (file) {
-                setEditingLecture({
-                  ...editingLecture,
-                  newImageFile: file,
-                  imgUrl: URL.createObjectURL(file), // 미리보기용 임시 URL
-                });
-              }
-            }}
-            className="border p-1 rounded"
+      <button
+        onClick={() => toggleImagePreview(lecture.id)}
+        className="text-blue-500 underline"
+      >
+        {previewImageId === lecture.id ? "이미지 접기" : "이미지 보기"}
+      </button>
+      {previewImageId === lecture.id && lecture.imgUrl && (
+        <div className="mt-2">
+          <img
+            src={lecture.imgUrl}
+            alt={`강의 이미지`}
+            className="w-32 h-32 object-cover rounded"
           />
-          {uploadProgress > 0 && (
-            <div className="w-full bg-gray-200 rounded">
-              <div
-                className="bg-blue-500 text-xs text-white p-1 rounded"
-                style={{ width: `${uploadProgress}%` }}
-              >
-                {uploadProgress.toFixed(1)}%
-              </div>
-            </div>
+          {imageSizes[lecture.id] && (
+            <p className="text-gray-500 text-sm mt-2">
+              이미지 크기: {imageSizes[lecture.id]}
+            </p>
           )}
         </div>
-      ) : lecture.imgUrl ? (
-        <img
-          src={lecture.imgUrl || undefined} // 빈 문자열 대신 undefined 전달
-          alt={`강의 이미지`}
-          className="w-16 h-16 object-cover rounded"
-        />
-      ) : (
-        <span className="text-gray-500">이미지 없음</span>
       )}
+      {!lecture.imgUrl && <span className="text-gray-500">이미지 없음</span>}
     </td>
   );
 
@@ -239,6 +244,34 @@ export default function AdminRegistration() {
         />
       ) : (
         lecture[field] || label
+      )}
+    </td>
+  );
+
+  const renderActionButtons = (lecture) => (
+    <td className="px-6 py-4 whitespace-nowrap flex gap-4 justify-center items-center">
+      {editingLecture?.id === lecture.id ? (
+        <>
+          <button
+            onClick={handleSaveEdit}
+            className="flex items-center justify-center bg-green-500 text-white rounded-lg p-4 hover:bg-green-600 transition-all duration-300"
+          >
+            <Save size={18} /> {/* 크기를 3배로 키움 */}
+          </button>
+          <button
+            onClick={handleCancel}
+            className="flex items-center justify-center bg-red-500 text-white rounded-lg p-4 hover:bg-red-600 transition-all duration-300"
+          >
+            <X size={18} /> {/* 크기를 3배로 키움 */}
+          </button>
+        </>
+      ) : (
+        <button
+          onClick={() => handleEditClick(lecture)}
+          className="flex items-center justify-center bg-blue-500 text-white rounded-lg p-4 hover:bg-blue-600 transition-all duration-300"
+        >
+          <Edit size={18} />
+        </button>
       )}
     </td>
   );
@@ -366,29 +399,7 @@ export default function AdminRegistration() {
                 {/* 상세 설명 컬럼 */}
                 {renderDetailCell(lecture)}
                 {/* 이미지 컬럼 */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {editingLecture?.id === lecture.id ? (
-                    <div className="flex flex-col gap-2">
-                      <input
-                        type="file"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          file &&
-                            setEditingLecture({
-                              ...editingLecture,
-                              newImageFile: file,
-                              imgUrl: URL.createObjectURL(file),
-                            });
-                        }}
-                      />
-                      {/* ... (업로드 진행률 표시) */}
-                    </div>
-                  ) : lecture.imgUrl ? (
-                    <img src={lecture.imgUrl || undefined} alt="강의 이미지" />
-                  ) : (
-                    <span className="text-gray-500">이미지 없음</span>
-                  )}
-                </td>
+                {renderImageColumn(lecture)}
                 {/* 생성일 처리 */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   {lecture.createdAt instanceof Date
@@ -396,31 +407,7 @@ export default function AdminRegistration() {
                     : "신규 항목"}
                 </td>
                 {/* 액션 버튼 */}
-                <td className="px-6 py-4 whitespace-nowrap flex flex-col flex-1 justify-center items-center h-full">
-                  {editingLecture?.id === lecture.id ? (
-                    <>
-                      <button
-                        onClick={handleSaveEdit}
-                        className="flex items-center justify-center"
-                      >
-                        <Save size={18} />
-                      </button>
-                      <button
-                        onClick={handleCancel}
-                        className="flex items-center justify-center"
-                      >
-                        <X size={18} />
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      onClick={() => handleEditClick(lecture)}
-                      className="flex items-center justify-center"
-                    >
-                      <Edit size={18} />
-                    </button>
-                  )}
-                </td>
+                {renderActionButtons(lecture)}
               </tr>
             ))}
           </tbody>

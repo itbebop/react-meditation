@@ -295,7 +295,7 @@ export default function AdminRegistration() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="min-w-full divide-y divide-gray-200 table-fixed">
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -396,18 +396,27 @@ export default function AdminRegistration() {
                     : "신규 항목"}
                 </td>
                 {/* 액션 버튼 */}
-                <td className="px-6 py-4 whitespace-nowrap flex gap-2">
+                <td className="px-6 py-4 whitespace-nowrap flex flex-col flex-1 justify-center items-center h-full">
                   {editingLecture?.id === lecture.id ? (
                     <>
-                      <button onClick={handleSaveEdit}>
+                      <button
+                        onClick={handleSaveEdit}
+                        className="flex items-center justify-center"
+                      >
                         <Save size={18} />
                       </button>
-                      <button onClick={handleCancel}>
+                      <button
+                        onClick={handleCancel}
+                        className="flex items-center justify-center"
+                      >
                         <X size={18} />
                       </button>
                     </>
                   ) : (
-                    <button onClick={() => handleEditClick(lecture)}>
+                    <button
+                      onClick={() => handleEditClick(lecture)}
+                      className="flex items-center justify-center"
+                    >
                       <Edit size={18} />
                     </button>
                   )}

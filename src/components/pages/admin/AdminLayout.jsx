@@ -8,6 +8,8 @@ import {
   Home,
   Handshake,
   LayoutDashboard,
+  SquareLibrary,
+  Mail,
 } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "../../../firebase/firebase_config";
@@ -75,8 +77,16 @@ const AdminLayout = () => {
               className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
               onClick={() => navigate("/dashboard/lecture")}
             >
-              <Menu size={18} />{" "}
+              <SquareLibrary size={18} />{" "}
               <span className="hidden sm:inline">교육과정 소개</span>
+            </Button>{" "}
+            <Button
+              variant="ghost"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              onClick={() => navigate("/dashboard/registraion")}
+            >
+              <Mail size={18} />{" "}
+              <span className="hidden sm:inline">수강 신청</span>
             </Button>
           </nav>
         </div>

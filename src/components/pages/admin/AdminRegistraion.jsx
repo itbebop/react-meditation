@@ -7,10 +7,20 @@ import {
   addDoc,
   deleteDoc,
   serverTimestamp,
+  writeBatch,
 } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "../../../firebase/firebase_config";
-import { Edit, Save, Plus, Trash2, X, GripVertical } from "lucide-react"; // X 아이콘 추가
+import {
+  Edit,
+  Save,
+  Plus,
+  Trash2,
+  X,
+  GripVertical,
+  ArrowDownUp,
+  RefreshCcw,
+} from "lucide-react"; // X 아이콘 추가
 
 export default function AdminRegistration() {
   const [lectures, setLectures] = useState([]);
@@ -22,27 +32,36 @@ export default function AdminRegistration() {
   const [draggingLectureId, setDraggingLectureId] = useState(null); // 드래그 앤 드롭 상태 추가
   const [hasOrderChanged, setHasOrderChanged] = useState(false);
   const [modifiedLectures, setModifiedLectures] = useState([]);
+  const [mainLectures, setMainLectures] = useState([]);
+  const [hasMainChanged, setHasMainChanged] = useState(false);
 
   useEffect(() => {
     loadLectures();
   }, []);
 
-  // 강의 데이터를 불러오고 오름차순 정렬
   const loadLectures = async () => {
     try {
       const querySnapshot = await getDocs(collection(db, "lectures"));
       const lectureData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
+        isMain: doc.data().isMain || false, // undefined일 경우 false로 대체
         createdAt: doc.data().createdAt?.toDate() || null,
       }));
-      // 수정된 부분: LEC 뒤 숫자에 따라 오름차순 정렬
-      lectureData.sort((a, b) => {
+
+      // 1. lectureId 기준 정렬
+      const sortedData = lectureData.sort((a, b) => {
         const numA = parseInt(a.lectureId.split("-")[1], 10);
         const numB = parseInt(b.lectureId.split("-")[1], 10);
         return numA - numB;
       });
-      setLectures(lectureData);
+
+      // 2. 정렬된 데이터로 lectures 상태 업데이트
+      setLectures(sortedData);
+
+      // 3. 메인 강의 필터링 (정렬된 데이터 사용)
+      const mainItems = sortedData.filter((lecture) => lecture.isMain);
+      setMainLectures(mainItems);
     } catch (error) {
       console.error("Error loading lectures:", error);
     }
@@ -77,6 +96,7 @@ export default function AdminRegistration() {
       imgUrl: "",
       isNew: true,
       createdAt: null,
+      isMain: false, // 기본값 false
     };
     setLectures((prev) => [...prev, newLecture]);
     setEditingLecture(newLecture);
@@ -273,9 +293,6 @@ export default function AdminRegistration() {
                 alt="미리보기 이미지"
                 className="w-32 h-32 object-cover rounded"
               />
-              <p className="text-gray-500 text-sm mt-2">
-                새 이미지가 선택되었습니다.
-              </p>
             </div>
           )}
         </div>
@@ -334,7 +351,7 @@ export default function AdminRegistration() {
   );
 
   const renderActionButtons = (lecture) => (
-    <td className="px-6 py-4 whitespace-nowrap flex gap-4 justify-center items-center">
+    <td className="px-4 py-4 whitespace-nowrap flex gap-4 justify-center items-center">
       {editingLecture?.id === lecture.id ? (
         <>
           <button
@@ -358,20 +375,6 @@ export default function AdminRegistration() {
           <Edit size={18} />
         </button>
       )}
-      {/* 수정된 부분: 드래그 버튼 추가 */}
-      <button
-        draggable
-        onDragStart={() => handleDragStart(lecture.id)}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={() => handleDrop(lecture.id)}
-        className={`cursor-move ${
-          modifiedLectures.includes(lecture.id)
-            ? "text-red-500 hover:text-red-700"
-            : "text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        <GripVertical size={28} />
-      </button>
     </td>
   );
 
@@ -422,6 +425,66 @@ export default function AdminRegistration() {
     }
   };
 
+  const countCheckedMain = () =>
+    lectures.filter((lecture) => lecture.isMain).length;
+
+  const handleMainCheck = (lectureId) => {
+    setLectures((prevLectures) => {
+      // 현재 체크된(isMain: true) 행들 가져오기
+      const currentlyChecked = prevLectures.filter((lecture) => lecture.isMain);
+
+      // 새로 체크하려는 행 가져오기
+      const targetLecture = prevLectures.find(
+        (lecture) => lecture.id === lectureId
+      );
+
+      // 유효성 검사: 이미 체크된 2개를 유지하면서 새로 선택한 행을 체크
+      if (currentlyChecked.length === 2 && !targetLecture.isMain) {
+        // 기존 체크된 두 행의 isMain을 false로 설정
+        const updatedLectures = prevLectures.map((lecture) => ({
+          ...lecture,
+          isMain: lecture.id === lectureId ? true : false, // 새 선택된 행만 true로 설정
+        }));
+        return updatedLectures;
+      }
+
+      // 기본 동작: 선택된 행의 isMain 값을 토글
+      return prevLectures.map((lecture) =>
+        lecture.id === lectureId
+          ? { ...lecture, isMain: !lecture.isMain }
+          : lecture
+      );
+    });
+
+    // 변경 상태 감지
+    setHasMainChanged(true);
+  };
+
+  const handleSaveMain = async () => {
+    try {
+      // 1. 배치 인스턴스 생성
+      const batch = writeBatch(db);
+
+      // 2. 모든 강의에 대해 업데이트 추가
+      lectures.forEach((lecture) => {
+        const lectureRef = doc(db, "lectures", lecture.id);
+        batch.update(lectureRef, {
+          isMain: lecture.isMain !== undefined ? lecture.isMain : false,
+        });
+      });
+
+      // 3. 배치 커밋
+      await batch.commit();
+
+      // 4. 상태 업데이트
+      setHasMainChanged(false);
+      alert("메인 설정이 저장되었습니다");
+    } catch (error) {
+      console.error("저장 실패:", error);
+      alert("저장 실패: " + error.message);
+    }
+  };
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -442,6 +505,24 @@ export default function AdminRegistration() {
             <Trash2 size={18} className="inline mr-2" />
             선택 삭제
           </button>
+          {hasOrderChanged && (
+            <button
+              onClick={handleSaveOrder}
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded ml-2"
+            >
+              <ArrowDownUp size={18} className="inline mr-2" />
+              순서 저장
+            </button>
+          )}
+          {hasMainChanged && (
+            <button
+              onClick={handleSaveMain}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold ml-2 py-2 px-4 rounded"
+            >
+              <RefreshCcw size={18} className="inline mr-2" />
+              메인 변경
+            </button>
+          )}
         </div>
       </div>
 
@@ -487,14 +568,7 @@ export default function AdminRegistration() {
                 작업
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                {hasOrderChanged && (
-                  <button
-                    onClick={handleSaveOrder}
-                    className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded ml-2"
-                  >
-                    순서 저장
-                  </button>
-                )}
+                메인 표시
               </th>
             </tr>
           </thead>
@@ -529,8 +603,34 @@ export default function AdminRegistration() {
                     ? lecture.createdAt.toLocaleString()
                     : "신규 항목"}
                 </td>
+
                 {/* 액션 버튼 */}
                 {renderActionButtons(lecture)}
+                {/* 메인 표시 컬럼 */}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={lecture.isMain}
+                    onChange={() => handleMainCheck(lecture.id)} // 핸들러 호출
+                    className="form-checkbox h-5 w-5 text-blue-600"
+                  />
+                </td>
+                <td className="px-4 py-4 whitespace-nowrap">
+                  {/* 수정된 부분: 드래그 버튼 추가 */}
+                  <button
+                    draggable
+                    onDragStart={() => handleDragStart(lecture.id)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => handleDrop(lecture.id)}
+                    className={`cursor-move ${
+                      modifiedLectures.includes(lecture.id)
+                        ? "text-red-500 hover:text-red-700"
+                        : "text-gray-500 hover:text-gray-700"
+                    }`}
+                  >
+                    <GripVertical size={28} />
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>

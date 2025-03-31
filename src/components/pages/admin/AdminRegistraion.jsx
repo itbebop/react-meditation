@@ -488,7 +488,7 @@ export default function AdminRegistration() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">강의 관리</h2>
+        <h2 className="text-2xl font-bold">강의 정보 관리</h2>
         <div>
           <button
             onClick={handleAddLecture}

@@ -17,7 +17,6 @@ export default function UserManagement() {
   const auth = getAuth();
   const [users, setUsers] = useState([]);
   const currentUserId = auth.currentUser?.uid;
-  const [loading, setLoading] = useState(true);
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [editingUser, setEditingUser] = useState(null);
 
@@ -35,8 +34,6 @@ export default function UserManagement() {
       setUsers(userData);
     } catch (error) {
       console.error("Error loading users:", error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -99,7 +96,7 @@ export default function UserManagement() {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">User Management</h2>
+        <h2 className="text-2xl font-bold">사용자 관리</h2>
         <div>
           <button
             onClick={handleAddUser}
@@ -200,7 +197,7 @@ export default function UserManagement() {
                   ) : (
                     <button
                       onClick={() => handleEditClick(user)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="flex items-center justify-center bg-blue-500 text-white rounded-lg p-4 hover:bg-blue-600 transition-all duration-300"
                     >
                       <Edit size={18} />
                     </button>

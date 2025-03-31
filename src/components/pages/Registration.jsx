@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebase_config";
+import { collection, getDocs, addDoc } from "firebase/firestore"; // addDoc 추가
 
 const Registration = () => {
   const [expandedCard, setExpandedCard] = useState(null);
@@ -10,6 +10,49 @@ const Registration = () => {
   const [lectures, setLectures] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 4;
+  // 새로운 state 추가 (팝업 입력값 관리)
+  const [formData, setFormData] = useState({
+    email: "",
+    name: "",
+    phone: "",
+  });
+  const [currentLecture, setCurrentLecture] = useState(null); // 현재 강의 데이터 상태 추가
+
+  // 입력 필드 변경 핸들러
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  // 폼 제출 핸들러
+  const handleSubmit = async () => {
+    try {
+      if (!currentLecture) {
+        alert("강의 정보가 없습니다.");
+        return;
+      }
+
+      // Firestore에 데이터 저장
+      await addDoc(collection(db, "alarms"), {
+        ...formData,
+        createdAt: new Date(),
+        lectureKey: currentLecture.id, // 강의 키
+        lectureId: currentLecture.lectureId, // 강의 ID
+        title: currentLecture.title, // 강의 제목
+      });
+
+      alert("신청 정보가 저장되었습니다!");
+      setShowPopup(false); // 팝업 닫기
+      setFormData({ email: "", name: "", phone: "" }); // 입력값 초기화
+      setCurrentLecture(null); // 현재 강의 데이터 초기화
+    } catch (error) {
+      console.error("저장 실패:", error);
+      alert("신청 정보 저장에 실패했습니다.");
+    }
+  };
 
   // Firestore에서 데이터 가져오기
   useEffect(() => {
@@ -48,11 +91,11 @@ const Registration = () => {
     setExpandedCard(expandedCard === index ? null : index);
   };
 
-  // 팝업 토글 함수
-  const handleTogglePopup = () => {
+  // 팝업 토글 함수 수정
+  const handleTogglePopup = (lecture = null) => {
     setShowPopup(!showPopup);
+    setCurrentLecture(lecture); // 강의 데이터를 저장
   };
-
   // 페이지 변경 핸들러
   const handlePageChange = (newPage) => {
     setCurrentPage(Math.max(1, Math.min(newPage, totalPages)));
@@ -138,7 +181,6 @@ const Registration = () => {
                 </div>
               </div>
             </div>
-
             {/* 상세 정보 컨테이너 */}
             {expandedCard === index && (
               <div className="bg-gray-100 p-4 rounded-lg mt-4 mx-6 mb-6">
@@ -149,7 +191,7 @@ const Registration = () => {
                 {/* 신청하기 버튼 */}
                 <button
                   className="w-full mt-4 bg-lightGreen text-white font-bold py-2 rounded-lg hover:bg-green-500 transition-all duration-300"
-                  onClick={handleTogglePopup}
+                  onClick={() => handleTogglePopup(lecture)} // lecture 객체 전달
                 >
                   신청하기
                 </button>
@@ -163,55 +205,70 @@ const Registration = () => {
       {showPopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-96">
-            {/* 제목 */}
-            <h2 className="text-xl font-bold text-gray-800 mb-4">수강 신청</h2>
+            <h2 className="text-lg font-bold mb-4">강의 신청</h2>
 
-            {/* 안내 문구 */}
-            <p className="text-sm text-gray-600 mb-6">
-              기재해주신 연락처로 수강 절차를 안내드리겠습니다.
-            </p>
-
-            {/* 입력 폼 */}
+            {/* 이메일 입력 */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
                 이메일
               </label>
               <input
                 type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
                 placeholder="example@email.com"
               />
             </div>
+
+            {/* 이름 입력 */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
                 이름
               </label>
               <input
                 type="text"
+                name="name"
+                value={formData.name}
+                onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
                 placeholder="홍길동"
               />
             </div>
+
+            {/* 전화번호 입력 */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700">
                 전화번호
               </label>
               <input
                 type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
                 className="w-full p-2 border border-gray-300 rounded mt-1"
                 placeholder="010-1234-5678"
               />
             </div>
 
-            {/* 버튼 그룹 */}
+            {/* 버튼 */}
             <div className="flex justify-end space-x-2">
+              {/* 팝업 닫기 버튼 */}
               <button
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-all"
-                onClick={handleTogglePopup}
+                onClick={() => {
+                  setShowPopup(false);
+                  setCurrentLectureKey(""); // 강의 키 초기화
+                }}
               >
                 닫기
               </button>
-              <button className="px-4 py-2 bg-lightGreen text-white rounded-lg hover:bg-green-500 transition-all">
+
+              <button
+                className="px-4 py-2 bg-lightGreen text-white rounded-lg hover:bg-green-500 transition-all"
+                onClick={handleSubmit}
+              >
                 보내기
               </button>
             </div>

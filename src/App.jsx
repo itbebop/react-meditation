@@ -20,6 +20,7 @@ import AdminHome from "./components/pages/admin/AdminHome";
 import AdminIntroduce from "./components/pages/admin/AdminIntroduce";
 import AdminLecture from "./components/pages/admin/AdminLecture";
 import AdminRegistraion from "./components/pages/admin/AdminRegistraion";
+import AdminFaq from "./components/pages/admin/AdminFaq";
 
 // Layout 컴포넌트
 const PublicLayout = () => (
@@ -60,6 +61,7 @@ function App() {
               path="/dashboard/registraion"
               element={<AdminRegistraion />}
             />
+            <Route path="/dashboard/faq" element={<AdminFaq />} />
           </Route>
         </Route>
 

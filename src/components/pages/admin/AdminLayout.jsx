@@ -88,6 +88,14 @@ const AdminLayout = () => {
               <Mail size={18} />{" "}
               <span className="hidden sm:inline">수강 신청</span>
             </Button>
+            <Button
+              variant="ghost"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              onClick={() => navigate("/dashboard/faq")}
+            >
+              <Mail size={18} />{" "}
+              <span className="hidden sm:inline">자주 묻는 질문</span>
+            </Button>
           </nav>
         </div>
         <div className="mt-auto">

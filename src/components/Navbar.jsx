@@ -50,7 +50,7 @@ const Navbar = () => {
 
   return (
     <header className="w-full fixed top-0 left-0 bg-white shadow-md z-10 flex items-center">
-      <div className="max-w-screen-xl mx-auto flex justify-between items-center px-4 lg:px-14 2xl:px-20 py-4 w-full">
+      <div className="max-w-screen-xl mx-auto flex justify-between items-center px-4 lg:px-10 2xl:px-12 py-4 w-full">
         {/* 헤더 로고 */}
         {!isMenuOpen && ( // 모바일 메뉴가 열렸을 때 헤더 로고 숨김
           <Link
@@ -103,15 +103,15 @@ const Navbar = () => {
       {isMenuOpen && (
         <div
           ref={menuRef}
-          className="bg-white lg:hidden w-full px-4 py-6 text-left"
+          className="bg-white lg:hidden absolute left-0 top-0 w-full px-4 py-6 text-left flex flex-col"
         >
           {/* 상단 로고와 닫기 버튼 */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-6 ">
             <Link to="/" onClick={() => setActiveMenu("/")}>
               <img
                 src={logo}
                 alt="Logo"
-                className="w-24 h-auto" // 모바일 화면에서 로고 크기 조정
+                className="w-32" // 모바일 화면에서 로고 크기 조정
               />
             </Link>
             <button
@@ -123,7 +123,7 @@ const Navbar = () => {
           </div>
 
           {/* 네비게이션 링크 - 왼쪽 정렬 */}
-          <ul className="space-y-6 text-left">
+          <ul className="space-y-6 pl-6">
             {navItems.map((item, index) => (
               <li key={index}>
                 <Link

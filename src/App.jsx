@@ -24,7 +24,7 @@ import AdminFaq from "./components/pages/admin/AdminFaq";
 
 // Layout 컴포넌트
 const PublicLayout = () => (
-  <div className="flex flex-col min-h-screen">
+  <div className="flex flex-col min-h-screen bg-gray-50">
     <Navbar />
     <div className="flex-grow">
       <Outlet />

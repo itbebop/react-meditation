@@ -124,7 +124,7 @@ const Home = () => {
                     slideInterval={5000}
                     leftControl=" "
                     rightControl=" "
-                    className="w-full h-[430px] sm:h-[540px] md:h-[550px]"
+                    className="w-full h-[540px] sm:h-[540px] md:h-[550px]"
                   >
                     {carouselImages.mobile.map((imageUrl, index) => (
                       <LazyLoadImage
@@ -146,7 +146,7 @@ const Home = () => {
         </div>
 
         {/* 카드 섹션 */}
-        <section className="py-16">
+        <section className="pt-44 pb-6">
           <div className="max-w-screen-xl mx-auto px-4 lg:px-14 text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-8 text-gray-800 tracking-tight">
               내면소통명상 기초과정 오픈!
@@ -166,7 +166,7 @@ const Home = () => {
                           `https://picsum.photos/800/600?random=${lecture.id}` // 기본 이미지 처리
                         }
                         alt={`강의 이미지 - ${lecture.title}`} // 접근성 개선
-                        className="w-full h-48 lg:h-full object-cover"
+                        className="w-full h-full object-cover rounded-lg"
                         style={{ aspectRatio: "1.2/1" }}
                       />
                     </div>
@@ -190,7 +190,7 @@ const Home = () => {
                         </h2>
 
                         {/* 강사 이름과 이동 버튼을 같은 행에 배치 */}
-                        <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center justify-between mb-1">
                           {/* 강사 이름 */}
                           <p className="text-sm text-gray-600 font-semibold">
                             {lecture.lecturer}

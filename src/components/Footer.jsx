@@ -14,25 +14,41 @@ const Footer = () => {
         {/* 회사 정보 */}
         <div className="text-left text-xs text-gray-500 mb-2">
           <p>고유번호: 460-82-00606 | 대표자: 김소영</p>
-          {/* <p>통신판매업 신고번호: 제2025-서울강남-00802호</p> */}
           <p>
             사업장 주소: 서울특별시 서초구 서래로 15, 402호(반포동, 범산빌딩)
           </p>
           <p>전화: 02-6956-1115 | 이메일: official@joohankim.org</p>
         </div>
 
-        <div className="text-left text-base font-semibold cursor-pointer hover:underline text-gray-700 mb-1">
+        {/* Contact Us */}
+        <a
+          href="mailto:oomeditation2025@gmail.com"
+          className="text-left text-base font-semibold cursor-pointer hover:underline text-gray-700 mb-1"
+        >
           Contact Us
-        </div>
-        {/* 소셜 미디어 아이콘 */}
+        </a>
+
         {/* 소셜 미디어 아이콘 */}
         <div className="flex space-x-4 mt-6">
-          <span className="cursor-pointer hover:opacity-75">
+          {/* YouTube 아이콘 */}
+          <a
+            href="https://www.youtube.com/@O2MEDI"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cursor-pointer hover:opacity-75"
+          >
             <img src={youtube} alt="YouTube" className="w-8 h-8" />
-          </span>
-          <span className="cursor-pointer hover:opacity-75">
+          </a>
+
+          {/* 네이버 카페 아이콘 */}
+          <a
+            href="https://cafe.naver.com/happyashram"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cursor-pointer hover:opacity-75"
+          >
             <img src={naverCafe} alt="NaverCafe" className="w-8 h-8" />
-          </span>
+          </a>
         </div>
 
         {/* 하단 고정 버튼 */}

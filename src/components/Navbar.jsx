@@ -61,9 +61,9 @@ const Navbar = () => {
   }, [isMenuOpen]);
 
   const navItems = [
-    { link: "국제명상협회 소개", path: "/about" },
-    { link: "교육과정", path: "/lecture" },
-    { link: "수강신청", path: "/registration" },
+    { link: "국제명상협회", path: "/about" },
+    { link: "교육 과정", path: "/lecture" },
+    { link: "수강 신청", path: "/registration" },
     { link: "FAQ", path: "/faq" },
   ];
 

@@ -42,7 +42,7 @@ const AdminLayout = () => {
           <nav className="space-y-2">
             <Button
               variant="ghost"
-              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2 text-white hover:text-gray-400"
               onClick={() => navigate("/dashboard")}
             >
               <LayoutDashboard size={18} />{" "}
@@ -50,7 +50,7 @@ const AdminLayout = () => {
             </Button>
             <Button
               variant="ghost"
-              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2 text-white hover:text-gray-400"
               onClick={() => navigate("/dashboard/users")}
             >
               <Users size={18} />{" "}
@@ -58,7 +58,7 @@ const AdminLayout = () => {
             </Button>
             <Button
               variant="ghost"
-              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2 text-white hover:text-gray-400"
               onClick={() => navigate("/dashboard/home")}
             >
               <Home size={18} />{" "}
@@ -66,7 +66,7 @@ const AdminLayout = () => {
             </Button>{" "}
             <Button
               variant="ghost"
-              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2 text-white hover:text-gray-400"
               onClick={() => navigate("/dashboard/introduce")}
             >
               <Handshake size={18} />{" "}
@@ -74,7 +74,7 @@ const AdminLayout = () => {
             </Button>
             <Button
               variant="ghost"
-              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2 text-white hover:text-gray-400"
               onClick={() => navigate("/dashboard/lecture")}
             >
               <SquareLibrary size={18} />{" "}
@@ -82,7 +82,7 @@ const AdminLayout = () => {
             </Button>{" "}
             <Button
               variant="ghost"
-              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2 text-white hover:text-gray-400"
               onClick={() => navigate("/dashboard/registraion")}
             >
               <Mail size={18} />{" "}
@@ -90,7 +90,7 @@ const AdminLayout = () => {
             </Button>
             <Button
               variant="ghost"
-              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2"
+              className="w-full text-sm sm:text-base flex items-center justify-center sm:justify-start space-x-2 text-white hover:text-gray-400"
               onClick={() => navigate("/dashboard/faq")}
             >
               <Mail size={18} />{" "}

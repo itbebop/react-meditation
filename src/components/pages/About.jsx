@@ -26,9 +26,11 @@ const About = () => {
       <div className="max-w-screen-xl mx-auto px-0 md:px-4 lg:px-10 xl:px-14">
         <div className="w-full">
           <h1 className="text-3xl font-bold text-gray-800 md:mt-4">
-            소개 화면
+            국제명상협회
           </h1>
-          <p className="mt-4 text-gray-600">국제명상협회 소개화면입니다.</p>
+          <p className="mt-4 text-gray-600">
+            사단법인 국제명상협회를 소개합니다.
+          </p>
           {/* Lazy Load Image 적용 */}
           {imageUrl && (
             <LazyLoadImage

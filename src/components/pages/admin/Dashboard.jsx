@@ -22,6 +22,7 @@ export default function AdminDashboard() {
   const [alarms, setAlarms] = useState([]);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
+  const [yearRange, setYearRange] = useState([]); // 연도 범위를 저장하기 위한 상태
 
   const db = getFirestore();
 
@@ -40,19 +41,48 @@ export default function AdminDashboard() {
         const userSnapshot = await getDocs(userCollection);
         setUserCount(userSnapshot.size);
 
+        // 모든 알림 데이터를 가져와 최소/최대 연도를 계산
+        const alarmsQuery = query(
+          collection(db, "alarms"),
+          orderBy("createdAt", "asc") // 오래된 순으로 정렬
+        );
+        const alarmsSnapshot = await getDocs(alarmsQuery);
+
+        if (!alarmsSnapshot.empty) {
+          const firstAlarmDate = alarmsSnapshot.docs[0]
+            .data()
+            .createdAt.toDate();
+          const lastAlarmDate = alarmsSnapshot.docs[
+            alarmsSnapshot.docs.length - 1
+          ]
+            .data()
+            .createdAt.toDate();
+
+          // 최소 연도와 최대 연도를 계산하여 yearRange 상태에 저장
+          const startYear = firstAlarmDate.getFullYear();
+          const endYear = lastAlarmDate.getFullYear();
+          setYearRange(
+            Array.from(
+              { length: endYear - startYear + 1 },
+              (_, i) => startYear + i
+            )
+          );
+        }
+
+        // 월별 데이터 필터링
         const startOfMonth = new Date(selectedYear, selectedMonth - 1, 1);
         const endOfMonth = new Date(selectedYear, selectedMonth, 0, 23, 59, 59);
 
-        const alarmsQuery = query(
+        const filteredAlarmsQuery = query(
           collection(db, "alarms"),
           where("createdAt", ">=", startOfMonth),
           where("createdAt", "<=", endOfMonth),
           orderBy("createdAt", "desc")
         );
-        const alarmsSnapshot = await getDocs(alarmsQuery);
+        const filteredAlarmsSnapshot = await getDocs(filteredAlarmsQuery);
 
         const alarmsData = await Promise.all(
-          alarmsSnapshot.docs.map(async (docSnap) => {
+          filteredAlarmsSnapshot.docs.map(async (docSnap) => {
             const alarmData = docSnap.data();
             let lectureInfo = { lectureId: "", title: "" };
 
@@ -61,7 +91,7 @@ export default function AdminDashboard() {
                 db,
                 "lectures",
                 alarmData.lectureKey
-              ); // Use renamed `firestoreDoc`
+              );
               const lectureDoc = await getDoc(lectureRef);
               if (lectureDoc.exists()) {
                 lectureInfo = lectureDoc.data();
@@ -127,20 +157,19 @@ export default function AdminDashboard() {
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">최근 수강 신청 정보</h3>
                   <div>
+                    {/* 동적으로 생성된 연도 옵션 */}
                     <select
                       value={selectedYear}
                       onChange={(e) => setSelectedYear(Number(e.target.value))}
                       className="mr-2 p-1 border rounded"
                     >
-                      {[...Array(5)].map((_, i) => {
-                        const year = new Date().getFullYear() - i;
-                        return (
-                          <option key={year} value={year}>
-                            {year}년
-                          </option>
-                        );
-                      })}
+                      {yearRange.map((year) => (
+                        <option key={year} value={year}>
+                          {year}년
+                        </option>
+                      ))}
                     </select>
+                    {/* 월 선택 */}
                     <select
                       value={selectedMonth}
                       onChange={(e) => setSelectedMonth(Number(e.target.value))}

@@ -342,7 +342,7 @@ export default function AdminRegistration() {
                 type === "number" ? Number(e.target.value) : e.target.value,
             })
           }
-          className="border rounded p-1 w-full max-w-[200px]"
+          className="border rounded p-1 w-full max-w-[80px]"
         />
       ) : (
         lecture[field] || label
@@ -380,19 +380,21 @@ export default function AdminRegistration() {
 
   // 상세 설명 렌더링 함수
   const renderDetailCell = (lecture) => {
-    const maxLength = 50; // maxLength 변수 정의 추가
+    const maxLength = 100;
 
     return (
-      <td className="px-6 py-4 max-w-xs overflow-hidden">
+      <td className="px-6 py-4 overflow-hidden w-[42rem]">
+        {" "}
+        {/* 너비를 약간 확장 */}
         {editingLecture?.id === lecture.id ? (
           <textarea
             value={editingLecture.detail}
             onChange={(e) =>
               setEditingLecture({ ...editingLecture, detail: e.target.value })
             }
-            className="border rounded p-1 w-64"
-            rows="3"
-            maxLength={100} // 필요시 maxLength 속성 추가
+            className="border rounded p-2 w-full"
+            rows="20"
+            maxLength={100}
           />
         ) : (
           <div className="truncate-text">
@@ -527,48 +529,50 @@ export default function AdminRegistration() {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200 table-fixed">
+        <table className="min-w-full divide-y divide-gray-200">
+          {" "}
+          {/* table-fixed 제거 */}
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
                 선택
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
                 강의 ID
               </th>
-
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
                 카테고리
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
                 카테고리 색상
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
                 제목
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
                 강사
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
                 강의 횟수
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
                 강의 시간(분)
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[25%]">
+                {" "}
+                {/* 상세 설명 컬럼 너비 확대 */}
                 상세 설명
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                이미지
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
+                {" "}
+                {/* 이미지 컬럼 너비 축소 */}
+                이미지 (800 x 600)
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
                 생성일
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
                 작업
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                메인 표시
               </th>
             </tr>
           </thead>
@@ -600,37 +604,12 @@ export default function AdminRegistration() {
                 {/* 생성일 처리 */}
                 <td className="px-6 py-4 whitespace-nowrap">
                   {lecture.createdAt instanceof Date
-                    ? lecture.createdAt.toLocaleString()
+                    ? lecture.createdAt.toLocaleDateString() // 날짜만 출력
                     : "신규 항목"}
                 </td>
 
                 {/* 액션 버튼 */}
                 {renderActionButtons(lecture)}
-                {/* 메인 표시 컬럼 */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={lecture.isMain}
-                    onChange={() => handleMainCheck(lecture.id)} // 핸들러 호출
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                  />
-                </td>
-                <td className="px-4 py-4 whitespace-nowrap">
-                  {/* 수정된 부분: 드래그 버튼 추가 */}
-                  <button
-                    draggable
-                    onDragStart={() => handleDragStart(lecture.id)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={() => handleDrop(lecture.id)}
-                    className={`cursor-move ${
-                      modifiedLectures.includes(lecture.id)
-                        ? "text-red-500 hover:text-red-700"
-                        : "text-gray-500 hover:text-gray-700"
-                    }`}
-                  >
-                    <GripVertical size={28} />
-                  </button>
-                </td>
               </tr>
             ))}
           </tbody>

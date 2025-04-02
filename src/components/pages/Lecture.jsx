@@ -28,7 +28,9 @@ const Lecture = () => {
           <h1 className="text-3xl font-bold text-gray-800 md:mt-4 mb-4 ">
             교육 과정
           </h1>
-          <p className="mt-4 text-gray-600">이곳은 교육과정 화면입니다.</p>
+          <p className="mt-4 text-gray-600">
+            국제명상협회에서 제공하는 교육과정 안내입니다.{" "}
+          </p>
           {/* Lazy Load Image 적용 */}
           {imageUrl && (
             <LazyLoadImage

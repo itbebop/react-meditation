@@ -112,7 +112,7 @@ const Registration = () => {
             수강 신청
           </h1>
           <p className="text-gray-600">
-            원하는 강의를 선택하여 수강 신청하세요.
+            원하시는 강의를 선택하여 수강 신청을 하세요.
           </p>
         </div>
       </div>
@@ -133,7 +133,7 @@ const Registration = () => {
                     `https://picsum.photos/id/101${index + 2}/800/600`
                   }
                   alt="Course"
-                  className="w-full h-full object-cover rounded-l-lg"
+                  className="w-full h-full object-cover rounded-lg"
                 />
               </div>
 

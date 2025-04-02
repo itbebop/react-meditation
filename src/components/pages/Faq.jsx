@@ -56,9 +56,7 @@ const Faq = () => {
       <div className="mb-10 max-w-screen-xl mx-auto md:px-4 lg:px-10 xl:px-14">
         <div className="w-full">
           <h1 className="text-3xl font-bold text-gray-800 md:mt-4">FAQ</h1>
-          <p className="mt-4 text-gray-600">
-            자주 묻는 질문들입니다. 궁금한 사항을 알아보세요.
-          </p>
+          <p className="mt-4 text-gray-600">궁금한 사항을 알아보세요.</p>
         </div>
       </div>
 

@@ -138,7 +138,7 @@ const Registration = () => {
               </div>
 
               {/* 카드 내용 (오른쪽) */}
-              <div className="md:w-3/4 p-6 ml-4">
+              <div className="md:w-3/4 p-4 md:p-6 md:ml-4">
                 <span
                   className="inline-block text-white text-xs font-semibold px-3 py-1 rounded-full mb-4"
                   style={{
@@ -154,7 +154,7 @@ const Registration = () => {
                   {lecture.lecturer}
                 </p>
                 <div className="flex justify-between items-center mb-4">
-                  <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
+                  <div className="flex items-center space-x-2 text-gray-900 font-medium text-sm">
                     <span className="flex items-center space-x-2">
                       <span>강의수</span>
                       <span className="text-gray-400">

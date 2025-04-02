@@ -6,6 +6,8 @@ import { storage } from "../../firebase/firebase_config";
 import { ref, getDownloadURL, listAll } from "firebase/storage";
 import { collection, query, where, getDocs } from "firebase/firestore";
 import { db } from "../../firebase/firebase_config"; // Firestore 초기화 확인
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -104,7 +106,7 @@ const Home = () => {
                     className="w-full h-[550px] xl:h-[600px] 2xl:h-[600px] lg:px-0 xl:px-20 2xl:px-32"
                   >
                     {carouselImages.pc.map((image, index) => (
-                      <img
+                      <LazyLoadImage
                         key={index}
                         src={image}
                         alt={`Carousel 이미지 ${index}`}
@@ -125,7 +127,7 @@ const Home = () => {
                     className="w-full h-[430px] sm:h-[540px] md:h-[550px]"
                   >
                     {carouselImages.mobile.map((imageUrl, index) => (
-                      <img
+                      <LazyLoadImage
                         key={index}
                         src={imageUrl}
                         alt={`Mobile Slide ${index + 1}`}
@@ -158,7 +160,7 @@ const Home = () => {
                   <div className="flex flex-col lg:flex-row h-full">
                     {/* 이미지 영역 */}
                     <div className="lg:w-1/2">
-                      <img
+                      <LazyLoadImage
                         src={
                           lecture.imgUrl ||
                           `https://picsum.photos/800/600?random=${lecture.id}` // 기본 이미지 처리
@@ -187,21 +189,22 @@ const Home = () => {
                           {lecture.title}
                         </h2>
 
-                        {/* 강사 이름 */}
-                        <p className="text-sm text-gray-600 mb-4 font-semibold">
-                          {lecture.lecturer}
-                        </p>
-                      </div>
+                        {/* 강사 이름과 이동 버튼을 같은 행에 배치 */}
+                        <div className="flex items-center justify-between mb-4">
+                          {/* 강사 이름 */}
+                          <p className="text-sm text-gray-600 font-semibold">
+                            {lecture.lecturer}
+                          </p>
 
-                      {/* 이동 버튼 */}
-                      <div className="flex justify-end mt-auto">
-                        <button
-                          onClick={handleNavigate}
-                          className="text-gray-600 hover:text-gray-900 transition-colors duration-300"
-                          aria-label="강의 상세 보기" // 접근성 개선
-                        >
-                          <ArrowRight size={24} />
-                        </button>
+                          {/* 이동 버튼 */}
+                          <button
+                            onClick={handleNavigate}
+                            className="text-gray-600 hover:text-gray-900 transition-colors duration-300"
+                            aria-label="강의 상세 보기" // 접근성 개선
+                          >
+                            <ArrowRight size={24} />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

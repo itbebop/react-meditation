@@ -3,6 +3,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { db } from "../../firebase/firebase_config";
 import { collection, getDocs, addDoc } from "firebase/firestore"; // addDoc 추가
+import { LazyLoadImage } from "react-lazy-load-image-component";
+import "react-lazy-load-image-component/src/effects/blur.css";
 
 const Registration = () => {
   const [expandedCard, setExpandedCard] = useState(null);
@@ -125,7 +127,7 @@ const Registration = () => {
             <div className="md:flex">
               {/* 카드 이미지 (왼쪽) */}
               <div className="md:w-1/4">
-                <img
+                <LazyLoadImage
                   src={
                     lecture.imgUrl ||
                     `https://picsum.photos/id/101${index + 2}/800/600`
@@ -136,7 +138,7 @@ const Registration = () => {
               </div>
 
               {/* 카드 내용 (오른쪽) */}
-              <div className="md:w-3/4 p-6">
+              <div className="md:w-3/4 p-6 ml-4">
                 <span
                   className="inline-block text-white text-xs font-semibold px-3 py-1 rounded-full mb-4"
                   style={{

@@ -102,11 +102,13 @@ const Registration = () => {
   };
 
   return (
-    <div id="registration" className="px-4 py-16 mt-12 bg-gray-50">
+    <div id="registration" className="px-4 py-16 mt-10 bg-gray-50">
       {/* 헤더 */}
-      <div className="flex justify-between items-center mb-12 max-w-screen-xl mx-auto md:px-28">
+      <div className="flex justify-between items-center mb-12 max-w-screen-xl mx-auto md:px-4 lg:px-10 xl:px-14">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">수강 신청</h1>
+          <h1 className="text-3xl font-bold text-gray-800 mb-4 md:mt-4">
+            수강 신청
+          </h1>
           <p className="text-gray-600">
             원하는 강의를 선택하여 수강 신청하세요.
           </p>
@@ -114,7 +116,7 @@ const Registration = () => {
       </div>
 
       {/* 카드 컨테이너 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 max-w-screen-xl mx-auto md:px-28">
+      <div className="grid grid-cols-1  lg:grid-cols-1 gap-6 max-w-screen-xl mx-auto md:px-4 lg:px-10 xl:px-14">
         {paginatedLectures.map((lecture, index) => (
           <div
             key={lecture.id}
@@ -122,8 +124,7 @@ const Registration = () => {
           >
             <div className="md:flex">
               {/* 카드 이미지 (왼쪽) */}
-              {/* 카드 이미지 (왼쪽) */}
-              <div className="flex-shrink-0 w-full h-52 md:w-72 md:h-52">
+              <div className="md:w-1/4">
                 <img
                   src={
                     lecture.imgUrl ||

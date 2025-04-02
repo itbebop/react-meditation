@@ -51,11 +51,11 @@ const Faq = () => {
   };
 
   return (
-    <div id="faq" className="px-4 py-16 mt-12 max-w-5xl mx-auto">
+    <div id="faq" className="px-4 py-16 mt-10 max-w-8xl mx-auto">
       {/* FAQ 제목과 설명 */}
-      <div className="mb-10 max-w-screen-xl mx-auto md:px-4">
+      <div className="mb-10 max-w-screen-xl mx-auto md:px-4 lg:px-10 xl:px-14">
         <div className="w-full">
-          <h1 className="text-3xl font-bold text-gray-800">FAQ</h1>
+          <h1 className="text-3xl font-bold text-gray-800 md:mt-4">FAQ</h1>
           <p className="mt-4 text-gray-600">
             자주 묻는 질문들입니다. 궁금한 사항을 알아보세요.
           </p>
@@ -63,9 +63,9 @@ const Faq = () => {
       </div>
 
       {/* FAQ 메뉴와 내용 */}
-      <div className="flex justify-center gap-14">
+      <div className="flex justify-center gap-8 max-w-6xl w-full md:px-4 lg:px-4 xl:px-0 mx-auto">
         {/* 왼쪽 메뉴 */}
-        <div className="w-1/4">
+        <div className="w-1/4 xl:w-1/2">
           {faqData.map((category) => (
             <button
               key={category.category}

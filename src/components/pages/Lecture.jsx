@@ -23,15 +23,19 @@ const Lecture = () => {
 
   return (
     <div id="lecture" className="px-4 py-16 mt-10">
-      <div className="mb-10 max-w-screen-xl mx-auto md:px-4">
+      <div className="max-w-screen-xl mx-auto md:px-4 lg:px-10 xl:px-14">
         <div className="w-full">
+          <h1 className="text-3xl font-bold text-gray-800 md:mt-4 mb-4 ">
+            교육 과정
+          </h1>
+          <p className="mt-4 text-gray-600">이곳은 교육과정 화면입니다.</p>
           {/* Lazy Load Image 적용 */}
           {imageUrl && (
             <LazyLoadImage
               src={imageUrl}
               alt="교육 과정 이미지"
               effect="blur" // 블러 효과 추가
-              className="mt-6 w-50 rounded-lg shadow-lg"
+              className="mt-10 w-50 rounded-lg shadow-lg"
             />
           )}
         </div>

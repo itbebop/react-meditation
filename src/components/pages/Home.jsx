@@ -9,7 +9,7 @@ import { db } from "../../firebase/firebase_config"; // Firestore 초기화 확�
 
 const Home = () => {
   const navigate = useNavigate();
-  const [carouselImages, setCarouselImages] = useState([]);
+  const [carouselImages, setCarouselImages] = useState({ pc: [], mobile: [] });
   const [isLoading, setIsLoading] = useState(true);
   const [mainLectures, setMainLectures] = useState([]);
 
@@ -35,21 +35,39 @@ const Home = () => {
     try {
       const imagesRef = ref(storage, "home/");
       const result = await listAll(imagesRef);
-      const urls = await Promise.all(
+
+      const pcImages = [];
+      const mobileImages = [];
+
+      // console.log("=== Firebase Storage에서 가져온 파일 목록 ===");
+      // result.items.forEach((item) => console.log(item.name));
+
+      await Promise.all(
         result.items.map(async (item) => {
           try {
-            return await getDownloadURL(item);
+            const url = await getDownloadURL(item);
+            console.log(`이미지 URL (${item.name}) -> ${url}`);
+
+            if (item.name.toLowerCase().includes("pcimg")) {
+              pcImages.push(url);
+            } else if (item.name.toLowerCase().includes("mobileimg")) {
+              mobileImages.push(url);
+            }
           } catch (error) {
             console.error(`이미지 가져오기 오류 (${item.name}):`, error);
-            return null;
           }
         })
       );
-      setCarouselImages(urls.filter((url) => url !== null));
+      // 빈 배열일 경우 기본 이미지 추가
+      setCarouselImages({
+        pc: pcImages.length > 0 ? pcImages : ["/default_pc.jpg"], // 기본 이미지 경로
+        mobile:
+          mobileImages.length > 0 ? mobileImages : ["/default_mobile.jpg"], // 기본 이미지 경로
+      });
     } catch (error) {
       console.error("이미지 목록 조회 실패:", error);
     } finally {
-      setIsLoading(false); // 로딩 종료
+      setIsLoading(false);
     }
   };
 
@@ -58,51 +76,88 @@ const Home = () => {
     fetchMainLectures();
   }, []);
 
+  useEffect(() => {
+    console.log("현재 상태:", carouselImages);
+  }, [carouselImages]);
+
   const handleNavigate = () => {
     navigate("/registration");
     window.scrollTo(0, 0);
   };
 
   return (
-    <div>
-      <div className="max-w-screen-2xl mx-auto h-auto bg-white mt-12">
+    <div className="bg-gray-50">
+      <div className="max-w-screen-2xl mx-auto h-auto mt-12">
         {/* Carousel 섹션 */}
-        <div className="h-[550px] sm:h-[550px] xl:h-[600px] 2xl:w-full mt-24 sm:mt-28 lg:mt-36 xl:mt-44 px-4 lg:px-14">
+        <div className="h-[400px] sm:h-[550px] xl:h-[600px] 2xl:w-full mt-24 sm:mt-28 lg:mt-36 xl:mt-40 px-4 md:px-14 ">
           {isLoading ? (
             <p className="text-center text-gray-500"></p>
-          ) : carouselImages.length > 0 ? (
-            <Carousel slideInterval={5000} leftControl=" " rightControl=" ">
-              {carouselImages.map((imageUrl, index) => (
-                <img
-                  key={index}
-                  src={imageUrl}
-                  alt={`Slide ${index + 1}`}
-                  className="w-full h-full object-cover"
-                />
-              ))}
-            </Carousel>
           ) : (
-            <p className="text-center text-gray-500">이미지가 없습니다.</p>
+            <>
+              {/* PC 화면 */}
+              <div className="hidden lg:block ">
+                {carouselImages.pc.length > 0 && (
+                  <Carousel
+                    slideInterval={5000}
+                    leftControl=" "
+                    rightControl=" "
+                    className="w-full h-[550px] xl:h-[600px] 2xl:h-[600px] lg:px-0 xl:px-20 2xl:px-32"
+                  >
+                    {carouselImages.pc.map((image, index) => (
+                      <img
+                        key={index}
+                        src={image}
+                        alt={`Carousel 이미지 ${index}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ))}
+                  </Carousel>
+                )}
+              </div>
+
+              {/* 모바일 화면 */}
+              <div className="block lg:hidden">
+                {carouselImages.mobile.length > 0 ? (
+                  <Carousel
+                    slideInterval={5000}
+                    leftControl=" "
+                    rightControl=" "
+                    className="w-full h-[430px] sm:h-[540px] md:h-[550px]"
+                  >
+                    {carouselImages.mobile.map((imageUrl, index) => (
+                      <img
+                        key={index}
+                        src={imageUrl}
+                        alt={`Mobile Slide ${index + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                    ))}
+                  </Carousel>
+                ) : (
+                  <p className="text-center text-gray-500">
+                    모바일용 이미지가 없습니다.
+                  </p>
+                )}
+              </div>
+            </>
           )}
         </div>
 
         {/* 카드 섹션 */}
-        <section className="bg-white py-16">
-          <div className="max-w-screen-xl mx-auto px-4 lg:px-14 text-left">
-            {" "}
-            {/* 텍스트 왼쪽 정렬 */}
+        <section className="py-16">
+          <div className="max-w-screen-xl mx-auto px-4 lg:px-14 text-center">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-extrabold mb-8 text-gray-800 tracking-tight">
               내면소통명상 기초과정 오픈!
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:flex lg:justify-center lg:gap-6 max-w-screen-xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:flex lg:justify-center gap-6 max-w-screen-xl mx-auto text-left">
               {mainLectures.map((lecture) => (
                 <div
                   key={lecture.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden lg:h-[250px] lg:w-[50%]"
+                  className="bg-white rounded-lg shadow-lg overflow-hidden lg:h-[230px] lg:w-[50%] 2xl:w-[100%]" // shadow-sm 추가
                 >
                   <div className="flex flex-col lg:flex-row h-full">
                     {/* 이미지 영역 */}
-                    <div className="lg:w-5/12">
+                    <div className="lg:w-1/2">
                       <img
                         src={
                           lecture.imgUrl ||
@@ -136,21 +191,6 @@ const Home = () => {
                         <p className="text-sm text-gray-600 mb-4 font-semibold">
                           {lecture.lecturer}
                         </p>
-                        <div className="flex items-center space-x-4 text-gray-900 font-medium text-sm">
-                          <span className="flex items-center space-x-2">
-                            <span>강의수</span>
-                            <span className="text-gray-400">
-                              {lecture.lectureNum}강
-                            </span>
-                          </span>
-                          <span>|</span>
-                          <span className="flex items-center space-x-2">
-                            <span>이수시간</span>
-                            <span className="text-gray-400">
-                              {lecture.lectureTime}시간
-                            </span>
-                          </span>
-                        </div>
                       </div>
 
                       {/* 이동 버튼 */}

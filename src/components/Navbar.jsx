@@ -6,6 +6,7 @@ import { Menu, X } from "lucide-react";
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("");
+  const [isMobile, setIsMobile] = useState(false); // 모바일 화면 여부를 저장하는 상태
   const menuRef = useRef(null);
   const buttonRef = useRef(null);
   const location = useLocation();
@@ -14,9 +15,32 @@ const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  // 화면 크기 감지 함수
+  const handleResize = () => {
+    setIsMobile(window.innerWidth < 1024); // lg 브레이크포인트(1024px) 기준
+
+    // 모바일 화면이 아닌 경우 메뉴를 자동으로 닫음
+    if (window.innerWidth >= 1024) {
+      setIsMenuOpen(false);
+    }
+  };
+
   useEffect(() => {
     setActiveMenu(location.pathname);
   }, [location]);
+
+  useEffect(() => {
+    // 초기 화면 크기 설정
+    handleResize();
+
+    // 화면 크기 변경 이벤트 리스너 등록
+    window.addEventListener("resize", handleResize);
+
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {

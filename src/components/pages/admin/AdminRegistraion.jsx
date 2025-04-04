@@ -375,6 +375,20 @@ export default function AdminRegistration() {
           <Edit size={18} />
         </button>
       )}
+      {/* 수정된 부분: 드래그 버튼 추가 */}
+      <button
+        draggable
+        onDragStart={() => handleDragStart(lecture.id)}
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={() => handleDrop(lecture.id)}
+        className={`cursor-move ${
+          modifiedLectures.includes(lecture.id)
+            ? "text-red-500 hover:text-red-700"
+            : "text-gray-500 hover:text-gray-700"
+        }`}
+      >
+        <GripVertical size={28} />
+      </button>
     </td>
   );
 

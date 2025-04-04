@@ -7,7 +7,7 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 import "react-lazy-load-image-component/src/effects/blur.css";
 
 const Registration = () => {
-  const [expandedCard, setExpandedCard] = useState(null);
+  const [expandedCards, setExpandedCards] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [lectures, setLectures] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -90,7 +90,12 @@ const Registration = () => {
 
   // 상세보기 토글 함수
   const handleToggleDetails = (index) => {
-    setExpandedCard(expandedCard === index ? null : index);
+    setExpandedCards(
+      (prev) =>
+        prev.includes(index)
+          ? prev.filter((i) => i !== index) // 이미 열려 있으면 제거
+          : [...prev, index] // 닫혀 있으면 추가
+    );
   };
 
   // 팝업 토글 함수 수정
@@ -174,8 +179,8 @@ const Registration = () => {
                     className="text-xs bg-neutralSilver flex items-center px-4 py-2 rounded-lg hover:bg-gray-200 transition-all duration-300"
                     onClick={() => handleToggleDetails(index)}
                   >
-                    {expandedCard === index ? "접기" : "보기"}
-                    {expandedCard === index ? (
+                    {expandedCards === index ? "접기" : "보기"}
+                    {expandedCards === index ? (
                       <FaChevronUp className="ml-2 text-gray-600" />
                     ) : (
                       <FaChevronDown className="ml-2 text-gray-600" />
@@ -185,7 +190,7 @@ const Registration = () => {
               </div>
             </div>
             {/* 상세 정보 컨테이너 */}
-            {expandedCard === index && (
+            {expandedCards.includes(index) && (
               <div className="bg-gray-100 p-4 rounded-lg mt-4 mx-6 mb-6">
                 <p className="text-sm text-gray-700 whitespace-pre-line">
                   {lecture.detail}

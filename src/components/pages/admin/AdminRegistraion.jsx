@@ -342,7 +342,7 @@ export default function AdminRegistration() {
                 type === "number" ? Number(e.target.value) : e.target.value,
             })
           }
-          className="border rounded p-1 w-full max-w-[80px]"
+          className="border rounded p-1 w-full max-w-[200px]"
         />
       ) : (
         lecture[field] || label
@@ -394,7 +394,7 @@ export default function AdminRegistration() {
             }
             className="border rounded p-2 w-full"
             rows="20"
-            maxLength={100}
+            maxLength={150}
           />
         ) : (
           <div className="truncate-text">

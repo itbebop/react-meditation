@@ -331,7 +331,10 @@ export default function AdminRegistration() {
   // 편집 가능한 셀 렌더링
   const renderEditableCell = (lecture, field, label, type = "text") => (
     <td className="px-6 py-4 whitespace-nowrap">
-      {editingLecture?.id === lecture.id ? (
+      {field === "lectureId" ? (
+        // 강의 ID는 항상 읽기 전용으로 표시
+        lecture[field] || label
+      ) : editingLecture?.id === lecture.id ? (
         <input
           type={type}
           value={editingLecture[field]}
@@ -551,6 +554,9 @@ export default function AdminRegistration() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
                 선택
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
+                메인
+              </th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
                 강의 ID
               </th>
@@ -601,6 +607,16 @@ export default function AdminRegistration() {
                     onChange={() => handleCheckboxChange(lecture.id)}
                     className="form-checkbox h-5 w-5 text-blue-600"
                     disabled={lecture.isNew}
+                  />
+                </td>
+                {/* 메인 체크박스 */}
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <input
+                    type="checkbox"
+                    checked={lecture.isMain || false}
+                    onChange={() => handleMainCheck(lecture.id)}
+                    className="form-checkbox h-5 w-5 text-yellow-500"
+                    disabled={countCheckedMain() >= 2 && !lecture.isMain}
                   />
                 </td>
                 {/* 수정된 렌더링 함수 호출 */}

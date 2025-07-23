@@ -38,33 +38,37 @@ const Home = () => {
       const imagesRef = ref(storage, "home/");
       const result = await listAll(imagesRef);
 
-      const pcImages = [];
-      const mobileImages = [];
-
-      // console.log("=== Firebase Storage에서 가져온 파일 목록 ===");
-      // result.items.forEach((item) => console.log(item.name));
-
-      await Promise.all(
-        result.items.map(async (item) => {
-          try {
-            const url = await getDownloadURL(item);
-            console.log(`이미지 URL (${item.name}) -> ${url}`);
-
-            if (item.name.toLowerCase().includes("pcimg")) {
-              pcImages.push(url);
-            } else if (item.name.toLowerCase().includes("mobileimg")) {
-              mobileImages.push(url);
-            }
-          } catch (error) {
-            console.error(`이미지 가져오기 오류 (${item.name}):`, error);
-          }
-        })
+      // 1. PC 및 모바일 파일만 추출
+      const pcItems = result.items.filter((item) =>
+        /^PC\d+$/i.test(item.name) // 파일명이 정확히 PC + 숫자
       );
-      // 빈 배열일 경우 기본 이미지 추가
+      const mobileItems = result.items.filter((item) =>
+        /^mobileimg\d+$/i.test(item.name)
+      );
+
+      // 2. 파일명을 오름차순 정렬 (PC1, PC2, PC3...)
+      const sortedPcItems = pcItems.sort((a, b) => {
+        const getNumber = (name) => parseInt(name.match(/\d+/)[0], 10);
+        return getNumber(a.name) - getNumber(b.name);
+      });
+
+      const sortedMobileItems = mobileItems.sort((a, b) => {
+        const getNumber = (name) => parseInt(name.match(/\d+/)[0], 10);
+        return getNumber(a.name) - getNumber(b.name);
+      });
+
+      // 3. Download URL 비동기 처리
+      const pcImages = await Promise.all(
+        sortedPcItems.map((item) => getDownloadURL(item))
+      );
+      const mobileImages = await Promise.all(
+        sortedMobileItems.map((item) => getDownloadURL(item))
+      );
+
+      // 4. 상태 업데이트
       setCarouselImages({
-        pc: pcImages.length > 0 ? pcImages : ["/default_pc.jpg"], // 기본 이미지 경로
-        mobile:
-          mobileImages.length > 0 ? mobileImages : ["/default_mobile.jpg"], // 기본 이미지 경로
+        pc: pcImages.length > 0 ? pcImages : ["/default_pc.jpg"],
+        mobile: mobileImages.length > 0 ? mobileImages : ["/default_mobile.jpg"],
       });
     } catch (error) {
       console.error("이미지 목록 조회 실패:", error);
@@ -72,6 +76,7 @@ const Home = () => {
       setIsLoading(false);
     }
   };
+
 
   useEffect(() => {
     fetchImages();

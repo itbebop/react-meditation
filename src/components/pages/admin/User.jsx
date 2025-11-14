@@ -11,7 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../../../firebase/firebase_config";
 import { getAuth } from "firebase/auth";
-import { Edit, Save, Plus, Trash2 } from "lucide-react";
+import { Edit, Save, Plus, Trash2, X } from "lucide-react"; // 아이콘 추가
 
 export default function UserManagement() {
   const auth = getAuth();
@@ -146,7 +146,9 @@ export default function UserManagement() {
                     checked={selectedUsers.includes(user.id)}
                     onChange={() => handleCheckboxChange(user.id)}
                     className="form-checkbox h-5 w-5 text-blue-600"
-                    disabled={user.id === currentUserId} // 현재 로그인한 사용자 비활성화
+                    disabled={
+                      user.id === currentUserId || user.role === "admin"
+                    } // 조건 추가
                   />
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -188,12 +190,20 @@ export default function UserManagement() {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {editingUser && editingUser.id === user.id ? (
-                    <button
-                      onClick={handleSaveEdit}
-                      className="text-green-600 hover:text-green-900"
-                    >
-                      <Save size={18} />
-                    </button>
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={handleSaveEdit}
+                        className="text-green-600 hover:text-green-900"
+                      >
+                        <Save size={18} />
+                      </button>
+                      <button
+                        onClick={() => setEditingUser(null)}
+                        className="text-red-600 hover:text-red-900"
+                      >
+                        <X size={18} />
+                      </button>
+                    </div>
                   ) : (
                     <button
                       onClick={() => handleEditClick(user)}

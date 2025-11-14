@@ -1,30 +1,31 @@
 import React, { useState, useEffect } from "react";
-import { storage } from "../../../firebase/firebase_config";
 import {
   ref,
   uploadBytesResumable,
   getDownloadURL,
   listAll,
+  deleteObject,
 } from "firebase/storage";
+import { storage } from "../../../firebase/firebase_config";
 import { Button } from "@ui/Button";
 import { Card, CardContent } from "@ui/Card";
 
 export default function AdminHome() {
   // 상태 초기화 부분 수정 (모든 배열을 독립 객체로 생성)
   const [selectedFiles, setSelectedFiles] = useState(
-    Array.from({ length: 5 }, () => ({ pcImg: null, mobileImg: null }))
+    Array.from({ length: 5 }, () => ({ PC: null, Mobile: null }))
   );
   const [uploadStatuses, setUploadStatuses] = useState(
-    Array.from({ length: 5 }, () => ({ pcImg: "", mobileImg: "" }))
+    Array.from({ length: 5 }, () => ({ PC: "", Mobile: "" }))
   );
   const [imageUrls, setImageUrls] = useState(
-    Array.from({ length: 5 }, () => ({ pcImg: "", mobileImg: "" }))
+    Array.from({ length: 5 }, () => ({ PC: "", Mobile: "" }))
   );
   const [imageSizes, setImageSizes] = useState(
-    Array.from({ length: 5 }, () => ({ pcImg: "", mobileImg: "" }))
+    Array.from({ length: 5 }, () => ({ PC: "", Mobile: "" }))
   );
   const [expandedImages, setExpandedImages] = useState(
-    Array.from({ length: 5 }, () => ({ pcImg: false, mobileImg: false }))
+    Array.from({ length: 5 }, () => ({ PC: false, Mobile: false }))
   );
 
   const getImageSize = (url, index, type) => {
@@ -50,7 +51,7 @@ export default function AdminHome() {
         const promises = Array(5)
           .fill(null)
           .map(async (_, i) => {
-            ["pcImg", "mobileImg"].forEach(async (type) => {
+            ["PC", "Mobile"].forEach(async (type) => {
               const fileName = `${type}${i + 1}`;
               if (existingFiles.includes(fileName)) {
                 try {
@@ -118,7 +119,7 @@ export default function AdminHome() {
       });
       return;
     }
-    const storageRef = ref(storage, `home/${type}${index + 1}`);
+    const storageRef = ref(storage, `home/${type}${index + 1}.png`);
     const uploadTask = uploadBytesResumable(
       storageRef,
       selectedFiles[index][type]
@@ -175,6 +176,36 @@ export default function AdminHome() {
     });
   };
 
+  const handleDeleteImage = async (index, type) => {
+    try {
+      // 파일명 생성 로직 수정 (인덱스 +1 제거)
+      const fileName = `${type}${index + 1}`;
+      const fileRef = ref(storage, `home/${fileName}`);
+
+      await deleteObject(fileRef);
+
+      setImageUrls((prev) => {
+        const newUrls = [...prev];
+        newUrls[index][type] = "";
+        return newUrls;
+      });
+
+      // 상태 업데이트 로직 분리
+      setUploadStatuses((prev) => {
+        const newStatuses = [...prev];
+        newStatuses[index][type] = "";
+        return newStatuses;
+      });
+    } catch (error) {
+      console.error("이미지 삭제 오류:", error);
+      setUploadStatuses((prev) => {
+        const newStatuses = [...prev];
+        newStatuses[index][type] = `삭제 실패: ${error.message}`;
+        return newStatuses;
+      });
+    }
+  };
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">
@@ -188,39 +219,40 @@ export default function AdminHome() {
               <h3 className="text-lg font-semibold mb-4">
                 이미지 {index + 1} (PC 및 Mobile)
               </h3>
-              <div className="mb-4">
-                <input
-                  type="file"
-                  onChange={(e) => handleFileChange(e, index, "pcImg")}
-                  className="mb-2"
-                />
-                <Button onClick={() => uploadImage(index, "pcImg")}>
-                  PC 이미지 업로드
-                </Button>
-              </div>
-              {uploadStatuses[index].pcImg && (
-                <div className="mt-4 p-4 bg-gray-100 rounded">
-                  <p>{uploadStatuses[index].pcImg}</p>
+              {["PC", "Mobile"].map((type) => (
+                <div key={`${type}-${index}`} className="mb-4">
+                  <input
+                    type="file"
+                    onChange={(e) =>
+                      setSelectedFiles((prev) => {
+                        const newFiles = [...prev];
+                        newFiles[index][type] = e.target.files[0];
+                        return newFiles;
+                      })
+                    }
+                    className="mb-2"
+                  />
+                  <Button onClick={() => uploadImage(index, type)}>
+                    {type === "PC" ? "PC" : "Mobile"} 이미지 업로드
+                  </Button>
+                  {imageUrls[index][type] && (
+                    <Button
+                      onClick={() => handleDeleteImage(index, type)}
+                      className="bg-red-500 text-white ml-4"
+                    >
+                      삭제
+                    </Button>
+                  )}
+                  {uploadStatuses[index][type] && (
+                    <p className="mt-2 text-sm text-gray-600">
+                      {uploadStatuses[index][type]}
+                    </p>
+                  )}
                 </div>
-              )}
-              <div className="mb-4">
-                <input
-                  type="file"
-                  onChange={(e) => handleFileChange(e, index, "mobileImg")}
-                  className="mb-2"
-                />
-                <Button onClick={() => uploadImage(index, "mobileImg")}>
-                  Mobile 이미지 업로드
-                </Button>
-              </div>
-              {uploadStatuses[index].mobileImg && (
-                <div className="mt-4 p-4 bg-gray-100 rounded">
-                  <p>{uploadStatuses[index].mobileImg}</p>
-                </div>
-              )}
+              ))}
             </CardContent>
             <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-4">
-              {["pcImg", "mobileImg"].map((type) =>
+              {["PC", "Mobile"].map((type) =>
                 imageUrls[index][type] ? (
                   <React.Fragment key={`${type}-${index}`}>
                     <button

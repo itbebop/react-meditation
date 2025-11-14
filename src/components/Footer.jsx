@@ -17,12 +17,12 @@ const Footer = () => {
           <p>
             사업장 주소: 서울특별시 서초구 서래로 15, 402호(반포동, 범산빌딩)
           </p>
-          <p>전화: 02-6956-1115 | 이메일: official@joohankim.org</p>
+          <p>전화: 02-6956-1115 | 이메일: aha098585@gmail.com</p>
         </div>
 
         {/* Contact Us */}
         <a
-          href="mailto:oomeditation2025@gmail.com"
+          href="mailto:aha098585@gmail.com"
           className="text-left text-base font-semibold cursor-pointer hover:underline text-gray-700 mb-1"
         >
           Contact Us

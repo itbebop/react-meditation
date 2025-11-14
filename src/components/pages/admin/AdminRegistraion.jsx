@@ -20,16 +20,18 @@ import {
   GripVertical,
   ArrowDownUp,
   RefreshCcw,
-} from "lucide-react"; // X 아이콘 추가
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 
 export default function AdminRegistration() {
   const [lectures, setLectures] = useState([]);
   const [selectedLectures, setSelectedLectures] = useState([]);
   const [editingLecture, setEditingLecture] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [previewImageId, setPreviewImageId] = useState(null); // 이미지 미리보기 상태 관리
+  const [previewImageId, setPreviewImageId] = useState(null);
   const [imageSizes, setImageSizes] = useState({});
-  const [draggingLectureId, setDraggingLectureId] = useState(null); // 드래그 앤 드롭 상태 추가
+  const [draggingLectureId, setDraggingLectureId] = useState(null);
   const [hasOrderChanged, setHasOrderChanged] = useState(false);
   const [modifiedLectures, setModifiedLectures] = useState([]);
   const [mainLectures, setMainLectures] = useState([]);
@@ -38,6 +40,7 @@ export default function AdminRegistration() {
   useEffect(() => {
     loadLectures();
   }, []);
+  const [expandedDetails, setExpandedDetails] = useState({});
 
   const loadLectures = async () => {
     try {
@@ -45,21 +48,18 @@ export default function AdminRegistration() {
       const lectureData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
-        isMain: doc.data().isMain || false, // undefined일 경우 false로 대체
+        isMain: doc.data().isMain || false,
         createdAt: doc.data().createdAt?.toDate() || null,
       }));
 
-      // 1. lectureId 기준 정렬
       const sortedData = lectureData.sort((a, b) => {
         const numA = parseInt(a.lectureId.split("-")[1], 10);
         const numB = parseInt(b.lectureId.split("-")[1], 10);
         return numA - numB;
       });
 
-      // 2. 정렬된 데이터로 lectures 상태 업데이트
       setLectures(sortedData);
 
-      // 3. 메인 강의 필터링 (정렬된 데이터 사용)
       const mainItems = sortedData.filter((lecture) => lecture.isMain);
       setMainLectures(mainItems);
     } catch (error) {
@@ -79,9 +79,7 @@ export default function AdminRegistration() {
     setEditingLecture(lecture);
   };
 
-  // 강의 추가 버튼 클릭 시 ID 자동 생성
   const handleAddLecture = () => {
-    // 수정된 부분: LEC-${index} 형식으로 ID 생성
     const newLectureId = `LEC-${lectures.length}`;
     const newLecture = {
       id: `temp-${Date.now()}`,
@@ -96,17 +94,16 @@ export default function AdminRegistration() {
       imgUrl: "",
       isNew: true,
       createdAt: null,
-      isMain: false, // 기본값 false
+      isMain: false,
     };
     setLectures((prev) => [...prev, newLecture]);
     setEditingLecture(newLecture);
   };
 
-  // 드래그 시작
   const handleDragStart = (lectureId) => {
-    setDraggingLectureId(lectureId); // 수정된 부분: 드래그 상태 저장
+    setDraggingLectureId(lectureId);
   };
-  // 드롭 처리 및 순서 변경
+
   const handleDrop = (targetLectureId) => {
     if (!draggingLectureId || draggingLectureId === targetLectureId) return;
 
@@ -123,7 +120,6 @@ export default function AdminRegistration() {
       updatedLectures[draggedIndex],
     ];
 
-    // ID 재생성 및 변경 상태 추적
     const modifiedIds = [];
     updatedLectures.forEach((lecture, index) => {
       const newId = `LEC-${index}`;
@@ -139,7 +135,6 @@ export default function AdminRegistration() {
     setDraggingLectureId(null);
   };
 
-  // 취소 버튼 핸들러
   const handleCancel = () => {
     if (editingLecture?.isNew) {
       setLectures((prev) => prev.filter((l) => l.id !== editingLecture.id));
@@ -161,13 +156,11 @@ export default function AdminRegistration() {
     }
   };
 
-  // 이미지 업로드 핸들러 수정
   const handleImageUpload = async (file, lectureId) => {
     try {
       const storageRef = ref(storage, `registration/${lectureId}/imageFile`);
       const uploadTask = uploadBytesResumable(storageRef, file);
 
-      // 업로드 상태 추적 추가
       return new Promise((resolve, reject) => {
         uploadTask.on(
           "state_changed",
@@ -193,13 +186,11 @@ export default function AdminRegistration() {
     }
   };
 
-  // 이미지 업로드 통합 저장 로직
   const handleSaveEdit = async () => {
     try {
       let updatedLecture = { ...editingLecture };
       delete updatedLecture.isNew;
 
-      // 1. 이미지 업로드 처리
       if (editingLecture.newImageFile) {
         const downloadURL = await handleImageUpload(
           editingLecture.newImageFile,
@@ -209,7 +200,6 @@ export default function AdminRegistration() {
         delete updatedLecture.newImageFile;
       }
 
-      // 2. Firestore 업데이트/추가 분기 처리
       let lectureData = {
         lectureId: updatedLecture.lectureId,
         category: updatedLecture.category,
@@ -226,16 +216,13 @@ export default function AdminRegistration() {
       };
 
       if (editingLecture.isNew) {
-        // 새 문서 추가
         const docRef = await addDoc(collection(db, "lectures"), lectureData);
-        lectureData.id = docRef.id; // 실제 ID 획득
+        lectureData.id = docRef.id;
       } else {
-        // 기존 문서 업데이트
         await updateDoc(doc(db, "lectures", updatedLecture.id), lectureData);
         lectureData.id = updatedLecture.id;
       }
 
-      // 3. UI 상태 업데이트
       setLectures((prev) =>
         prev.map((lec) =>
           lec.id === editingLecture.id ? { ...lectureData } : lec
@@ -266,11 +253,17 @@ export default function AdminRegistration() {
     img.src = url;
   };
 
-  // 테이블에 이미지 컬럼 추가
+  // 상세설명 토글 함수 추가
+  const toggleDetailExpand = (id) => {
+    setExpandedDetails((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   const renderImageColumn = (lecture) => (
-    <td className="px-6 py-4 whitespace-nowrap">
+    <td className="px-4 py-3">
       {editingLecture?.id === lecture.id ? (
-        // 편집 모드에서 이미지 업로드 필드 표시
         <div className="flex flex-col gap-2">
           <input
             type="file"
@@ -279,61 +272,54 @@ export default function AdminRegistration() {
               if (file) {
                 setEditingLecture({
                   ...editingLecture,
-                  newImageFile: file, // 새 이미지 파일 저장
-                  imgUrl: URL.createObjectURL(file), // 미리보기 URL 생성
+                  newImageFile: file,
+                  imgUrl: URL.createObjectURL(file),
                 });
               }
             }}
-            className="mb-2"
+            className="text-sm"
           />
           {editingLecture.imgUrl && (
-            <div>
-              <img
-                src={editingLecture.imgUrl}
-                alt="미리보기 이미지"
-                className="w-32 h-32 object-cover rounded"
-              />
-            </div>
+            <img
+              src={editingLecture.imgUrl}
+              alt="미리보기"
+              className="w-24 h-18 object-cover rounded"
+            />
           )}
         </div>
       ) : lecture.imgUrl ? (
-        <>
-          {/* 이미지 보기/접기 버튼 */}
+        <div>
           <button
             onClick={() => toggleImagePreview(lecture.id)}
-            className="text-blue-500 underline"
+            className="text-blue-500 hover:text-blue-700 text-sm underline"
           >
             {previewImageId === lecture.id ? "이미지 접기" : "이미지 보기"}
           </button>
-
-          {/* 조건부 렌더링으로 이미지 표시 */}
           {previewImageId === lecture.id && (
             <div className="mt-2">
               <img
                 src={lecture.imgUrl}
-                alt={`강의 이미지`}
-                className="w-32 h-32 object-cover rounded"
+                alt="강의 이미지"
+                className="w-32 h-24 object-cover rounded"
               />
               {imageSizes[lecture.id] && (
-                <p className="text-gray-500 text-sm mt-2">
-                  이미지 크기: {imageSizes[lecture.id]}
+                <p className="text-gray-500 text-xs mt-1">
+                  {imageSizes[lecture.id]}
                 </p>
               )}
             </div>
           )}
-        </>
+        </div>
       ) : (
-        <span className="text-gray-500">이미지 없음</span>
+        <span className="text-gray-400 text-sm">없음</span>
       )}
     </td>
   );
 
-  // 편집 가능한 셀 렌더링
   const renderEditableCell = (lecture, field, label, type = "text") => (
-    <td className="px-6 py-4 whitespace-nowrap">
+    <td className="px-4 py-3">
       {field === "lectureId" ? (
-        // 강의 ID는 항상 읽기 전용으로 표시
-        lecture[field] || label
+        <span className="text-sm">{lecture[field] || label}</span>
       ) : editingLecture?.id === lecture.id ? (
         <input
           type={type}
@@ -345,80 +331,102 @@ export default function AdminRegistration() {
                 type === "number" ? Number(e.target.value) : e.target.value,
             })
           }
-          className="border rounded p-1 w-full max-w-[200px]"
+          className="border rounded p-1.5 w-full text-sm"
         />
       ) : (
-        lecture[field] || label
+        <span className="text-sm">{lecture[field] || label}</span>
       )}
     </td>
   );
 
   const renderActionButtons = (lecture) => (
-    <td className="px-4 py-4 whitespace-nowrap flex gap-4 justify-center items-center">
-      {editingLecture?.id === lecture.id ? (
-        <>
+    <td className="px-3 py-3">
+      <div className="flex gap-2 justify-center items-center">
+        {editingLecture?.id === lecture.id ? (
+          <>
+            <button
+              onClick={handleSaveEdit}
+              className="bg-green-500 text-white rounded p-2 hover:bg-green-600 transition-all"
+            >
+              <Save size={16} />
+            </button>
+            <button
+              onClick={handleCancel}
+              className="bg-red-500 text-white rounded p-2 hover:bg-red-600 transition-all"
+            >
+              <X size={16} />
+            </button>
+          </>
+        ) : (
           <button
-            onClick={handleSaveEdit}
-            className="flex items-center justify-center bg-green-500 text-white rounded-lg p-4 hover:bg-green-600 transition-all duration-300"
+            onClick={() => handleEditClick(lecture)}
+            className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600 transition-all"
           >
-            <Save size={18} />
+            <Edit size={16} />
           </button>
-          <button
-            onClick={handleCancel}
-            className="flex items-center justify-center bg-red-500 text-white rounded-lg p-4 hover:bg-red-600 transition-all duration-300"
-          >
-            <X size={18} />
-          </button>
-        </>
-      ) : (
+        )}
         <button
-          onClick={() => handleEditClick(lecture)}
-          className="flex items-center justify-center bg-blue-500 text-white rounded-lg p-4 hover:bg-blue-600 transition-all duration-300"
+          draggable
+          onDragStart={() => handleDragStart(lecture.id)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={() => handleDrop(lecture.id)}
+          className={`cursor-move ${
+            modifiedLectures.includes(lecture.id)
+              ? "text-red-500 hover:text-red-700"
+              : "text-gray-500 hover:text-gray-700"
+          }`}
         >
-          <Edit size={18} />
+          <GripVertical size={20} />
         </button>
-      )}
-      {/* 수정된 부분: 드래그 버튼 추가 */}
-      <button
-        draggable
-        onDragStart={() => handleDragStart(lecture.id)}
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={() => handleDrop(lecture.id)}
-        className={`cursor-move ${
-          modifiedLectures.includes(lecture.id)
-            ? "text-red-500 hover:text-red-700"
-            : "text-gray-500 hover:text-gray-700"
-        }`}
-      >
-        <GripVertical size={28} />
-      </button>
+      </div>
     </td>
   );
 
-  // 상세 설명 렌더링 함수
+  // 상세 설명 렌더링 함수 수정 (토글 기능 추가)
   const renderDetailCell = (lecture) => {
-    const maxLength = 100;
+    const maxLength = 50;
+    const isExpanded = expandedDetails[lecture.id];
+    const shouldTruncate = lecture.detail && lecture.detail.length > maxLength;
 
     return (
-      <td className="px-6 py-4 overflow-hidden w-[42rem]">
-        {" "}
-        {/* 너비를 약간 확장 */}
+      <td className="px-4 py-3 min-w-[300px]">
         {editingLecture?.id === lecture.id ? (
           <textarea
             value={editingLecture.detail}
             onChange={(e) =>
               setEditingLecture({ ...editingLecture, detail: e.target.value })
             }
-            className="border rounded p-2 w-full"
-            rows="20"
-            maxLength={150}
+            className="border rounded p-2 w-full text-sm"
+            rows="4"
           />
         ) : (
-          <div className="truncate-text">
-            {lecture.detail
-              ? lecture.detail.slice(0, maxLength) +
-                (lecture.detail.length > maxLength ? "..." : "")
-              : "상세 설명 없음"}
+          <div className="space-y-1">
+            <div className="text-sm leading-relaxed">
+              {/* 수정: expand 시 전체, 아니면 일부만 표시 */}
+              {isExpanded
+                ? lecture.detail || "상세 설명 없음"
+                : shouldTruncate
+                ? `${lecture.detail.slice(0, maxLength)}...`
+                : lecture.detail || "상세 설명 없음"}
+            </div>
+            {shouldTruncate && (
+              <button
+                onClick={() => toggleDetailExpand(lecture.id)}
+                className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-xs"
+              >
+                {isExpanded ? (
+                  <>
+                    <ChevronUp size={14} />
+                    접기
+                  </>
+                ) : (
+                  <>
+                    <ChevronDown size={14} />
+                    더보기
+                  </>
+                )}
+              </button>
+            )}
           </div>
         )}
       </td>
@@ -436,7 +444,7 @@ export default function AdminRegistration() {
       await Promise.all(batchUpdates);
       setHasOrderChanged(false);
       setModifiedLectures([]);
-      loadLectures(); // 변경 사항 반영을 위해 데이터 재조회
+      loadLectures();
       alert("순서가 성공적으로 저장되었습니다.");
     } catch (error) {
       console.error("순서 저장 실패:", error);
@@ -449,25 +457,18 @@ export default function AdminRegistration() {
 
   const handleMainCheck = (lectureId) => {
     setLectures((prevLectures) => {
-      // 현재 체크된(isMain: true) 행들 가져오기
       const currentlyChecked = prevLectures.filter((lecture) => lecture.isMain);
-
-      // 새로 체크하려는 행 가져오기
       const targetLecture = prevLectures.find(
         (lecture) => lecture.id === lectureId
       );
 
-      // 유효성 검사: 이미 체크된 2개를 유지하면서 새로 선택한 행을 체크
       if (currentlyChecked.length === 2 && !targetLecture.isMain) {
-        // 기존 체크된 두 행의 isMain을 false로 설정
-        const updatedLectures = prevLectures.map((lecture) => ({
+        return prevLectures.map((lecture) => ({
           ...lecture,
-          isMain: lecture.id === lectureId ? true : false, // 새 선택된 행만 true로 설정
+          isMain: lecture.id === lectureId ? true : false,
         }));
-        return updatedLectures;
       }
 
-      // 기본 동작: 선택된 행의 isMain 값을 토글
       return prevLectures.map((lecture) =>
         lecture.id === lectureId
           ? { ...lecture, isMain: !lecture.isMain }
@@ -475,16 +476,13 @@ export default function AdminRegistration() {
       );
     });
 
-    // 변경 상태 감지
     setHasMainChanged(true);
   };
 
   const handleSaveMain = async () => {
     try {
-      // 1. 배치 인스턴스 생성
       const batch = writeBatch(db);
 
-      // 2. 모든 강의에 대해 업데이트 추가
       lectures.forEach((lecture) => {
         const lectureRef = doc(db, "lectures", lecture.id);
         batch.update(lectureRef, {
@@ -492,10 +490,7 @@ export default function AdminRegistration() {
         });
       });
 
-      // 3. 배치 커밋
       await batch.commit();
-
-      // 4. 상태 업데이트
       setHasMainChanged(false);
       alert("메인 설정이 저장되었습니다");
     } catch (error) {
@@ -505,145 +500,135 @@ export default function AdminRegistration() {
   };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-50 min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">강의 정보 관리</h2>
-        <div>
+        <div className="flex gap-2 flex-wrap">
           <button
             onClick={handleAddLecture}
-            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded mr-2"
+            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
           >
-            <Plus size={18} className="inline mr-2" />
+            <Plus size={18} />
             강의 추가
           </button>
           <button
             onClick={handleDeleteSelected}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
             disabled={selectedLectures.length === 0}
           >
-            <Trash2 size={18} className="inline mr-2" />
+            <Trash2 size={18} />
             선택 삭제
           </button>
           {hasOrderChanged && (
             <button
               onClick={handleSaveOrder}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded ml-2"
+              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
             >
-              <ArrowDownUp size={18} className="inline mr-2" />
+              <ArrowDownUp size={18} />
               순서 저장
             </button>
           )}
           {hasMainChanged && (
             <button
               onClick={handleSaveMain}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold ml-2 py-2 px-4 rounded"
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
             >
-              <RefreshCcw size={18} className="inline mr-2" />
+              <RefreshCcw size={18} />
               메인 변경
             </button>
           )}
         </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-gray-200">
-          {" "}
-          {/* table-fixed 제거 */}
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
-                선택
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
-                메인
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                강의 ID
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                카테고리
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                카테고리 색상
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[15%]">
-                제목
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                강사
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
-                강의 횟수
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[5%]">
-                강의 시간(분)
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[25%]">
-                {" "}
-                {/* 상세 설명 컬럼 너비 확대 */}
-                상세 설명
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                {" "}
-                {/* 이미지 컬럼 너비 축소 */}
-                이미지 (800 x 600)
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                생성일
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-[10%]">
-                작업
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {lectures.map((lecture) => (
-              <tr key={lecture.id}>
-                {/* 선택 체크박스 */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={selectedLectures.includes(lecture.id)}
-                    onChange={() => handleCheckboxChange(lecture.id)}
-                    className="form-checkbox h-5 w-5 text-blue-600"
-                    disabled={lecture.isNew}
-                  />
-                </td>
-                {/* 메인 체크박스 */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked={lecture.isMain || false}
-                    onChange={() => handleMainCheck(lecture.id)}
-                    className="form-checkbox h-5 w-5 text-yellow-500"
-                    disabled={countCheckedMain() >= 2 && !lecture.isMain}
-                  />
-                </td>
-                {/* 수정된 렌더링 함수 호출 */}
-                {renderEditableCell(lecture, "lectureId", "강의 ID")}
-                {renderEditableCell(lecture, "category", "카테고리")}
-                {renderEditableCell(lecture, "categoryColor", "색상코드")}
-                {renderEditableCell(lecture, "title", "제목")}
-                {renderEditableCell(lecture, "lecturer", "강사")}
-                {renderEditableCell(lecture, "lectureNum", "0", "number")}
-                {renderEditableCell(lecture, "lectureTime", "0", "number")}
-                {/* 상세 설명 컬럼 */}
-                {renderDetailCell(lecture)}
-                {/* 이미지 컬럼 */}
-                {renderImageColumn(lecture)}
-                {/* 생성일 처리 */}
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {lecture.createdAt instanceof Date
-                    ? lecture.createdAt.toLocaleDateString() // 날짜만 출력
-                    : "신규 항목"}
-                </td>
-
-                {/* 액션 버튼 */}
-                {renderActionButtons(lecture)}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                  선택
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                  메인
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                  강의 ID
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                  카테고리
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                  카테고리 색상
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                  제목
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                  강사
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                  강의 횟수
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                  강의 시간(분)
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[300px]">
+                  상세 설명
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                  이미지 (800x600)
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                  생성일
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                  작업
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {lectures.map((lecture) => (
+                <tr key={lecture.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedLectures.includes(lecture.id)}
+                      onChange={() => handleCheckboxChange(lecture.id)}
+                      className="form-checkbox h-4 w-4 text-blue-600"
+                      disabled={lecture.isNew}
+                    />
+                  </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={lecture.isMain || false}
+                      onChange={() => handleMainCheck(lecture.id)}
+                      className="form-checkbox h-4 w-4 text-yellow-500"
+                      disabled={countCheckedMain() >= 2 && !lecture.isMain}
+                    />
+                  </td>
+                  {renderEditableCell(lecture, "lectureId", "강의 ID")}
+                  {renderEditableCell(lecture, "category", "카테고리")}
+                  {renderEditableCell(lecture, "categoryColor", "색상코드")}
+                  {renderEditableCell(lecture, "title", "제목")}
+                  {renderEditableCell(lecture, "lecturer", "강사")}
+                  {renderEditableCell(lecture, "lectureNum", "0", "number")}
+                  {renderEditableCell(lecture, "lectureTime", "0", "number")}
+                  {renderDetailCell(lecture)}
+                  {renderImageColumn(lecture)}
+                  <td className="px-4 py-3">
+                    <span className="text-sm">
+                      {lecture.createdAt instanceof Date
+                        ? lecture.createdAt.toLocaleDateString()
+                        : "신규 항목"}
+                    </span>
+                  </td>
+                  {renderActionButtons(lecture)}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

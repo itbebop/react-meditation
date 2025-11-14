@@ -155,7 +155,7 @@ export default function AdminDashboard() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">최근 수강 신청 정보</h3>
+                  <h3 className="text-lg font-semibold">최근 수강 신청</h3>
                   <div>
                     {/* 동적으로 생성된 연도 옵션 */}
                     <select

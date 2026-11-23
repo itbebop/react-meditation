@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { LazyLoadImage } from "react-lazy-load-image-component"; // Lazy Load Image 추가
 import "react-lazy-load-image-component/src/effects/blur.css"; // 블러 효과 스타일 추가
-import { DISPLAY_MODE, loadIntroducePage } from "../../firebase/introducePage";
+import { DISPLAY_MODE, loadPageContent } from "../../firebase/pageContent";
 import RichContent from "../editor/RichContent";
 
 const About = () => {
@@ -25,7 +25,7 @@ const About = () => {
     // 표시 방식 설정을 읽지 못하면(문서 없음, 권한 없음 등) 기존처럼 이미지를 보여줌
     const fetchPage = async () => {
       try {
-        setPage(await loadIntroducePage());
+        setPage(await loadPageContent("introduce"));
       } catch (error) {
         console.error("소개 페이지 설정 가져오기 실패:", error.message);
         setPage({ displayMode: DISPLAY_MODE.IMAGE, contentHtml: "" });

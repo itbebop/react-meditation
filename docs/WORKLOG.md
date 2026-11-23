@@ -6,6 +6,52 @@
 
 ---
 
+## 2026-11-23 — 교육 과정 페이지에 이미지/텍스트 선택 + 에디터 추가
+
+- 브랜치: `feat/lecture-editor` (`docs/worklog-admin-registration-deploy` 위에서 시작, 아직 머지·배포 안 함)
+- 사용자 요청: "Lecture.jsx 교육과정 화면에도 협회 소개 화면처럼 에디터를 선택적으로 넣을 수 있도록 수정"
+
+### 배경 / 목적
+- 교육 과정 페이지(`/lecture`)는 Storage `lecture/imageFile` 이미지 한 장만 보여줄 수 있었음.
+- 협회 소개 페이지에 만든 기능(이미지/텍스트 선택, 글꼴·이미지 첨부가 되는 에디터)을 교육 과정에도 적용.
+- 두 관리자 화면 코드가 거의 같아서, 협회 소개용 모듈·설정 패널을 페이지 이름만 받는 공용 부품으로 바꿔 함께 사용(중복 코드 방지).
+
+### 변경 내용
+**1. 저장 모듈 공용화: `src/firebase/introducePage.js` 삭제 → `src/firebase/pageContent.js` 신규**
+- `loadPageContent(pageId)`, `savePageContent(pageId, …)`, `uploadPageContentImage(pageId, file)`. `pageId`는 `"introduce"` 또는 `"lecture"`만 허용
+- 저장 위치는 페이지별: Firestore `pages/<pageId>`, 에디터 이미지 Storage `<pageId>/content/`
+- 협회 소개는 저장 위치가 그대로(`pages/introduce`, `introduce/content/`)라 기존 데이터·동작 유지
+
+**2. 관리자 설정 패널 공용화: `src/components/pages/admin/PageContentSettings.jsx` 신규**
+- `AdminIntroduce.jsx` 안에 있던 표시 방식 선택 + 에디터 + 저장 부분을 옮김
+- props: `pageId`, `pageName`, `publicPath`, `imageSectionTitle`, `imageUrl`
+- 라디오 버튼 `name`을 페이지별로 구분(`introduce-display-mode`, `lecture-display-mode`)
+- 협회 소개 화면의 문구는 이전과 같음("소개 페이지 표시 방식", "소개 페이지 열기", "저장했습니다. 소개 페이지에 바로 반영됩니다.")
+
+**3. 교육 과정 화면**
+- 공개 `Lecture.jsx`: `pages/lecture`가 텍스트 모드이고 내용이 있으면 에디터 글(`RichContent`, DOMPurify 정리), 아니면 기존 이미지. **문서가 없거나 읽기 실패 시 이미지** → 관리자가 저장하기 전까지 운영 화면 그대로
+- 관리자 `AdminLecture.jsx`: 제목 "교육과정 이미지 업로드" → "교육과정", 그 아래 설정 패널(표시 방식·에디터) 추가, 기존 이미지 업로드 카드는 소제목 "교육과정 이미지 업로드"로 유지 (협회 소개 화면과 같은 구성)
+
+**4. 기타**
+- `About.jsx`, `AdminIntroduce.jsx`: 공용 모듈·패널을 쓰도록만 변경
+- Emulator 시드: `lecture/imageFile` 이미지 추가
+- `CLAUDE.md`: 구조·`pages` 컬렉션·Storage 경로 설명 갱신
+
+### 확인 / 결과
+- `npm run build` 성공, `npm run lint` 16개로 이전과 같음(새·수정 파일에서 오류 없음)
+- **공개 화면이 바뀌지 않았는지** (개발 서버 + 운영 데이터 읽기만): 수정 전후 `/lecture`, `/about` 본문 HTML 비교 → **둘 다 완전히 같음**. 운영 Firestore `pages/lecture` 비로그인 읽기 → 404(문서 없음, 읽기 권한 있음)
+- **Emulator에서 확인** (운영 데이터 사용 안 함):
+  - 교육과정 관리자 화면: 표시 방식(이미지 선택됨)·에디터 표시, 이미지 설명 "아래 '교육과정 이미지 업로드'에…", "교육 과정 페이지 열기" 링크 `/lecture`
+  - 긴 글(제목·번호 목록 포함 약 1,100자) 붙여넣기, 이미지 붙여넣기 → Storage `lecture/content/`에 업로드
+  - 텍스트 모드 저장 → "저장했습니다. 교육 과정 페이지에 바로 반영됩니다." → `/lecture`에 글·이미지 표시, 기존 이미지 숨김. 이때 `/about`은 영향 없이 이미지 그대로
+  - 협회 소개 관리자 화면: 문구·라디오 이름이 이전과 같고, 텍스트 모드 저장 → `/about`에 표시. 이때 `/lecture` 내용은 그대로(두 페이지가 따로 저장됨)
+- 운영 사이트·실제 관리자 계정에서는 아직 확인하지 않음(배포 전). 운영에서 `pages/lecture` 쓰기 권한은 `pages/introduce`와 같은 컬렉션이라 문제없을 것으로 보이지만 첫 저장 때 확인 필요
+
+### 남은 일
+- 운영 배포는 사용자 확인 후(개발 원칙 8번)
+
+---
+
 ## 2026-11-23 — PR #5 머지 및 배포 (수강 신청 관리 화면 개편 운영 반영)
 
 - 머지 커밋: `32df0c2` (PR itbebop/react-meditation#5 → `main`). 문서 커밋 `3e16a0a`, `db69ea1`도 함께 반영됨.

@@ -67,14 +67,17 @@ async function main() {
   // 3. 기존 방식의 소개 이미지(introduce/imageFile) - "이미지" 표시 방식 확인용
   const bucket = readBucket();
   const image = fs.readFileSync(path.join(root, "IMA_favicon.png"));
-  await call(
-    `${STORAGE}/upload/storage/v1/b/${bucket}/o?uploadType=media&name=${encodeURIComponent("introduce/imageFile")}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "image/png", Authorization: "Bearer owner" },
-      body: image,
-    }
-  );
+  // 협회 소개·교육 과정 페이지의 기존 방식 이미지
+  for (const imgPath of ["introduce/imageFile", "lecture/imageFile"]) {
+    await call(
+      `${STORAGE}/upload/storage/v1/b/${bucket}/o?uploadType=media&name=${encodeURIComponent(imgPath)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "image/png", Authorization: "Bearer owner" },
+        body: image,
+      }
+    );
+  }
 
   // 4. 강의(lectures) - 운영과 같은 구조(order 없음, 이미지 registration/LEC-n/imageFile)
   const lectures = [
@@ -115,7 +118,7 @@ async function main() {
 
   console.log("Emulator 테스트 데이터 준비 완료");
   console.log(`- 관리자 계정: ${TEST_ADMIN.email} (비밀번호는 scripts/seed-emulator.mjs 참고)`);
-  console.log("- user 컬렉션 등록, introduce/imageFile 업로드, 샘플 강의 5개");
+  console.log("- user 컬렉션 등록, introduce·lecture 이미지 업로드, 샘플 강의 5개");
 }
 
 main().catch((e) => {

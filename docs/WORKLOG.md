@@ -6,9 +6,39 @@
 
 ---
 
+## 2026-11-23 — PR #3 머지 및 배포 (협회 소개 에디터 운영 반영)
+
+- 머지 커밋: `64e63f9` (PR itbebop/react-meditation#3 → `main`). PR #2의 문서 커밋이 포함되어 PR #2도 자동으로 머지 처리됨.
+- 배포 실행: GitHub Actions run `45180553357`, 전 단계 성공
+- 사용자 확인: 사용자가 "머지하고 배포 확인"을 요청함
+
+### 결과
+- 운영 번들 변경 확인:
+  | | 배포 전 | 배포 후 |
+  |---|---|---|
+  | JS | `assets/index-LegiaGDH.js` | `assets/index-BQLrAs00.js` |
+  | CSS | `assets/index-KdSF9RfN.css` | `assets/index-DBN1yshS.css` |
+  | 에디터 | 없음 | `assets/RichTextEditor-Bxd6nGfg.js` (응답 200) |
+- 배포된 파일 이름이 로컬 `main`(`64e63f9`) 빌드 결과와 같음.
+- 운영 사이트 브라우저 확인:
+  - 소개 페이지: **기존 이미지 그대로 표시**(운영에 `pages/introduce` 문서가 아직 없음), 에디터 파일은 불러오지 않음
+  - 홈: 이미지·강의 데이터 정상
+  - 수강 신청: 강의 4개 표시
+  - 비로그인 `/dashboard/introduce` → `/admin`으로 이동
+  - 콘솔 오류 없음
+- **관리자 로그인 후 화면과 운영에서의 저장은 확인하지 못함**(로그인 계정 없음). 관리자가 처음 저장할 때 Firestore 쓰기 권한이 확인됨.
+
+### 정리
+- 로컬 Emulator(firebase CLI, Firestore용 java)와 Emulator용 개발 서버(5174)를 종료함.
+
+### 남은 일
+- 관리자 계정으로 `/dashboard/introduce`에서 첫 저장 → 성공하면 표시 방식과 글이 소개 페이지에 반영. "저장 실패: Missing or insufficient permissions"가 나오면 Firestore 규칙에 `pages` 컬렉션 쓰기 허용 추가 필요.
+
+---
+
 ## 2026-11-23 — 협회 소개 페이지: 이미지/텍스트 선택 + 리치 텍스트 에디터
 
-- 브랜치: `feat/about-editor` (PR #2 `docs/worklog-first-deploy` 위에서 시작, 아직 머지·배포 안 함)
+- 커밋: `475174b` (브랜치 `feat/about-editor`, PR itbebop/react-meditation#3). 2026-11-23 머지·배포됨(위 항목 참고)
 - 사용자 확인: 에디터 방식 제안(TipTap / Quill / Toast UI / CKEditor·TinyMCE) 중 **추천안(TipTap + Emulator 확인)**으로 진행하기로 사용자가 선택함. 화면 변경(관리자 화면 구성, 소개 페이지 텍스트 표시)은 이 요청 범위에 포함.
 
 ### 배경 / 목적

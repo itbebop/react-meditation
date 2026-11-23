@@ -6,9 +6,36 @@
 
 ---
 
+## 2026-11-23 — PR #4 머지 및 배포 (에디터 글꼴·크기·색·형광펜 운영 반영)
+
+- 머지 커밋: `594ff5e` (PR itbebop/react-meditation#4 → `main`). `docs/worklog-about-editor-deploy`의 문서 커밋 3개도 함께 반영됨.
+- 배포 실행: GitHub Actions run `45184017869`, 전 단계 성공
+- 사용자 확인: 사용자가 "머지하고 배포 확인"을 요청함
+
+### 결과
+- 운영 번들 변경 확인:
+  | | 배포 전 | 배포 후 |
+  |---|---|---|
+  | JS | `assets/index-BQLrAs00.js` | `assets/index-18hXMAQN.js` |
+  | CSS | `assets/index-DBN1yshS.css` | `assets/index-BtsFo21C.css` |
+  | 에디터 | `RichTextEditor-Bxd6nGfg.js` | `RichTextEditor-CNeDtliG.js` |
+- 배포된 파일 이름이 로컬 `main`(`594ff5e`) 빌드 결과와 같음.
+- 운영 서버에서 에디터 파일, 글꼴 CSS, 글꼴 파일(woff2, `font/woff2`) 모두 응답 200.
+- 운영 사이트 브라우저 확인:
+  - 소개 페이지: 현재 운영 설정이 "이미지" 모드라 기존 이미지 표시. 글꼴 CSS·에디터 파일은 불러오지 않음
+  - 홈: 이미지·강의 데이터 정상, 글꼴 파일 요청 0건
+  - FAQ: 질문 12개 표시
+  - 콘솔 오류 없음
+- **실제 관리자 계정에서 새 툴바 사용·저장, 운영에서 글꼴이 적용된 글 표시는 확인하지 못함**(로그인 계정 없음, 운영 데이터에 쓰기 테스트 안 함). Emulator에서는 확인 완료(아래 항목).
+
+### 남은 일
+- 관리자가 운영에서 글꼴·색을 적용해 저장한 뒤 소개 페이지 표시 확인
+
+---
+
 ## 2026-11-23 — 에디터에 글꼴·글자 크기·글자 색·형광펜 추가
 
-- 브랜치: `feat/editor-text-style` (`docs/worklog-about-editor-deploy` 위에서 시작, 아직 머지·배포 안 함)
+- 커밋: `cc4545c` (브랜치 `feat/editor-text-style`, PR itbebop/react-meditation#4). 2026-11-23 머지·배포됨(위 항목 참고)
 - 사용자 확인: 글꼴 변경 기능 문의 → 제안 중 **글꼴 종류, 글자 크기, 글자 색, 형광펜 4가지 모두**, 글꼴은 **웹폰트 4종(권장안)**으로 사용자가 선택함
 
 ### 배경 / 목적

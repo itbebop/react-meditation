@@ -6,6 +6,54 @@
 
 ---
 
+## 2026-11-23 — 에디터에 글꼴·글자 크기·글자 색·형광펜 추가
+
+- 브랜치: `feat/editor-text-style` (`docs/worklog-about-editor-deploy` 위에서 시작, 아직 머지·배포 안 함)
+- 사용자 확인: 글꼴 변경 기능 문의 → 제안 중 **글꼴 종류, 글자 크기, 글자 색, 형광펜 4가지 모두**, 글꼴은 **웹폰트 4종(권장안)**으로 사용자가 선택함
+
+### 배경 / 목적
+- 협회 소개 에디터에서 글꼴을 바꿀 수 있게 해 달라는 요청.
+- 사이트 기본 글꼴은 Tailwind 기본 sans(기기 시스템 글꼴)입니다. 기기에 설치된 글꼴만 쓰면 Windows/Mac/모바일마다 모양이 달라지므로, 웹폰트를 사이트에 직접 포함해 어느 기기에서나 같게 보이도록 했습니다.
+
+### 변경 내용
+**1. 툴바 (`src/components/editor/RichTextEditor.jsx`)**
+- 글꼴 드롭다운: 기본 글꼴 / 나눔고딕 / 나눔명조 / 고운바탕 / Noto Sans KR (목록에서 각 글꼴 모양으로 미리 보임)
+- 글자 크기 드롭다운: 작게(14px) / 기본 크기 / 조금 크게(18px) / 크게(20px) / 아주 크게(24px). 자유 입력 대신 단계로 제한해 디자인·모바일 표시가 깨지지 않게 함
+- 글자 색 팔레트 8색(사이트 색 기준: 진한 초록 #1C7244, 초록 #4CAF4F, 금색 #D9AE46, 올리브 #3C493C, 진한 회색, 회색, 빨강, 파랑) + "기본 색"
+- 형광펜 팔레트 6색(노랑, 연두, 주황, 하늘, 분홍, 회색) + "형광펜 없음"
+- 커서 위치의 현재 글꼴·크기·색을 툴바에 표시. 브라우저가 색을 `rgb(...)`, 글꼴을 큰따옴표로 돌려주는 차이를 맞추는 처리(`toHex`, `matchOption`) 포함
+- TipTap 공식 확장 `@tiptap/extension-text-style` 3.35.0의 `TextStyle`, `FontFamily`, `FontSize`, `Color`, `BackgroundColor` 사용
+
+**2. 목록·글꼴 로딩 (`src/components/editor/textStyles.js`, 신규)**
+- 글꼴·크기·색 목록과 허용 스타일 목록을 한곳에서 관리(에디터와 공개 화면이 같이 사용)
+- 웹폰트: `@fontsource/nanum-gothic`, `nanum-myeongjo`, `gowun-batang`, `noto-sans-kr`(각 400·700 굵기). 외부(Google Fonts) 요청 없이 사이트에서 직접 제공
+- **글꼴 CSS는 필요할 때만 동적으로 불러옴**: 처음엔 공통 CSS에 바로 넣었는데, 한글 웹폰트의 `@font-face` 선언이 많아서 모든 페이지가 받는 CSS가 117KB → 678KB(gzip 16KB → 221KB)로 커졌습니다. 그래서 공개 화면은 글에 쓰인 글꼴만(`loadFontsUsedIn`), 관리자 에디터는 목록 전체(`loadAllFonts`)를 불러오도록 바꿨습니다.
+
+**3. 공개 화면 보안 (`src/components/editor/RichContent.jsx`)**
+- 저장된 HTML의 `style` 속성은 `font-family`, `font-size`, `color`, `background-color`, `text-align`만 남기고 나머지는 제거. `url(`, `expression`, `javascript:` 값도 제거. `position: fixed` 같은 스타일로 화면을 덮거나 외부 이미지를 불러오는 것을 막기 위함
+- 글에 쓰인 웹폰트만 불러오기
+
+### 확인 / 결과
+- `npm run build` 성공, `npm run lint` 19개로 기존과 같음(새 파일에서 오류 없음), `npm audit` 4개(기존 grpc 계열)로 변화 없음
+- 번들: 공통 CSS 117.32KB → 117.52KB(gzip 16.51 → 16.54KB), 공통 JS gzip 305.17 → 306.12KB, 에디터 파일 gzip 138 → 140KB. 글꼴 CSS는 별도 파일(글꼴·굵기별 약 20~28KB gzip)
+- **Emulator에서 브라우저 확인** (운영 데이터 사용 안 함):
+  - 툴바 드롭다운으로 4개 글꼴 각각 적용 → `font-family` span 생성
+  - 글자 크기 작게(14px)/아주 크게(24px) 적용
+  - 글자 색 팔레트에서 진한 초록 선택 → `color: rgb(28, 114, 68)`
+  - 형광펜 팔레트에서 노랑 선택 → `background-color: rgb(254, 240, 138)`
+  - 커서를 옮기면 툴바에 현재 글꼴·색이 표시됨(정규화 처리 후)
+  - 텍스트 모드로 저장 → 소개 페이지에 모든 스타일 표시, 4개 글꼴 모두 실제로 로드됨(`document.fonts.check` true)
+  - 한 글꼴(고운바탕)만 쓴 글 → 그 글꼴 CSS 2개(400·700)만 불러옴
+  - 글이 없는 페이지(FAQ) → 글꼴 파일 요청 0건
+  - 보안: `position: fixed; width/height: 100%; z-index; background-image: url(...)`이 섞인 style → 화면에는 `font-family`와 `color`만 남음
+- 운영 사이트·실제 관리자 계정에서는 아직 확인하지 않음(배포 전)
+
+### 남은 일
+- 운영 배포는 사용자 확인 후(개발 원칙 8번)
+- 참고: `src/App.css`(Nanum Gothic 700 Google Fonts import, 맑은 고딕 지정)는 어디에서도 import되지 않는 사용하지 않는 파일입니다. IMPROVEMENTS.md에 기록
+
+---
+
 ## 2026-11-23 — PR #3 머지 및 배포 (협회 소개 에디터 운영 반영)
 
 - 머지 커밋: `64e63f9` (PR itbebop/react-meditation#3 → `main`). PR #2의 문서 커밋이 포함되어 PR #2도 자동으로 머지 처리됨.

@@ -45,6 +45,7 @@ Firestore 보안 규칙과 Firebase Auth 설정(회원가입 허용 여부)은 �
 - [ ] **404 페이지**: 현재 `<div>404 Not Found</div>`만 있고 레이아웃이 없습니다.
 - [ ] **에디터 본문에서 지운 이미지가 Storage에 남음**: 협회 소개 에디터에서 이미지를 삭제해도 `introduce/content/`의 파일은 지워지지 않습니다. 용량이 쌓이면 저장된 HTML에 없는 파일을 정리하는 기능을 추가합니다.
 - [ ] **Emulator의 Firestore 규칙이 전부 허용**: 운영 규칙이 저장소에 없어서 Emulator는 모든 읽기/쓰기를 허용한 상태로 실행됩니다. 운영 규칙을 `firestore.rules`로 가져오면 Emulator에서도 같은 규칙으로 시험할 수 있습니다(단, `firebase.json`에 `firestore` 항목을 넣으면 `firebase deploy` 시 규칙도 배포되므로 주의).
+- [ ] **사용하지 않는 `src/App.css`**: Google Fonts(Nanum Gothic 700) import와 `맑은 고딕` 글꼴 지정이 있지만 어디에서도 import되지 않습니다. 실수로 import하면 사이트 전체 글꼴이 바뀌므로 삭제를 권장합니다.
 - [ ] **(선택) 데이터 접근 분리**: Firestore 호출이 페이지마다 흩어져 있습니다. 서비스/훅으로 모으면 권한·오류 처리를 한곳에서 관리할 수 있습니다.
 
 ## 작업 기록

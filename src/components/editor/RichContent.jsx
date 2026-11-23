@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import DOMPurify from "dompurify";
+import { ALLOWED_STYLE_PROPERTIES, loadFontsUsedIn } from "./textStyles";
 
 // 외부 링크는 새 탭으로 열고, 원래 페이지에 접근하지 못하도록 rel 지정
 DOMPurify.addHook("afterSanitizeAttributes", (node) => {
@@ -9,6 +10,18 @@ DOMPurify.addHook("afterSanitizeAttributes", (node) => {
   }
   if (node.tagName === "IMG") {
     node.setAttribute("loading", "lazy");
+  }
+  // style 속성은 에디터가 쓰는 속성(글꼴, 크기, 색, 배경색, 정렬)만 남김.
+  // position, 크기 조작 등으로 화면을 덮는 것을 막기 위함
+  if (node.hasAttribute && node.hasAttribute("style")) {
+    const kept = ALLOWED_STYLE_PROPERTIES.map((prop) => {
+      const value = node.style.getPropertyValue(prop);
+      return value && !/url\(|expression|javascript:/i.test(value)
+        ? `${prop}: ${value}`
+        : null;
+    }).filter(Boolean);
+    if (kept.length) node.setAttribute("style", kept.join("; "));
+    else node.removeAttribute("style");
   }
 });
 
@@ -26,6 +39,11 @@ export default function RichContent({ html, className = "" }) {
       }),
     [html]
   );
+
+  // 글에 쓰인 웹폰트만 불러옴
+  useEffect(() => {
+    loadFontsUsedIn(clean);
+  }, [clean]);
 
   return (
     <div

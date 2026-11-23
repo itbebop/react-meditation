@@ -78,7 +78,8 @@ src/
     Navbar.jsx, Footer.jsx     # 공개 레이아웃
     ui/                        # Button, Card (경로 별칭 @ui)
     editor/RichTextEditor.jsx  # TipTap 리치 텍스트 에디터 (관리자 화면에서 lazy 로드)
-    editor/RichContent.jsx     # 에디터 HTML을 DOMPurify로 정리해 표시 (.rich-content 스타일은 index.css)
+    editor/RichContent.jsx     # 에디터 HTML을 DOMPurify로 정리해 표시, style은 허용 속성만 (.rich-content 스타일은 index.css)
+    editor/textStyles.js       # 글꼴·크기·색 목록, 웹폰트(@fontsource) 동적 로딩 - 공통 CSS에 직접 import 금지(한글 @font-face가 매우 큼)
     pages/                     # 공개 페이지: Home, About, Lecture, Registration, Faq
     pages/admin/               # 관리자: Login, ProtectedRoute, AdminLayout, Dashboard, User, Admin*
   assets/                      # 이미지 (Footer 등에서 import)

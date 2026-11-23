@@ -1,3 +1,58 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * 에디터로 작성한 본문(협회 소개 등) 스타일.
+ * .rich-content 클래스 안에서만 적용되므로 다른 화면에는 영향이 없습니다.
+ * 관리자 에디터와 공개 화면이 같은 스타일을 써서 작성한 모양 그대로 보이게 합니다.
+ */
+@layer components {
+  .rich-content {
+    @apply text-gray-700 leading-relaxed break-words;
+  }
+  .rich-content > * + * {
+    @apply mt-4;
+  }
+  .rich-content h2 {
+    @apply text-2xl font-bold text-gray-800 mt-10;
+  }
+  .rich-content h3 {
+    @apply text-xl font-semibold text-gray-800 mt-8;
+  }
+  .rich-content ul {
+    @apply list-disc pl-6;
+  }
+  .rich-content ol {
+    @apply list-decimal pl-6;
+  }
+  .rich-content li + li {
+    @apply mt-1;
+  }
+  .rich-content li > p {
+    @apply m-0;
+  }
+  .rich-content blockquote {
+    @apply border-l-4 border-gray-300 pl-4 italic text-gray-600;
+  }
+  .rich-content hr {
+    @apply my-8 border-gray-200;
+  }
+  .rich-content a {
+    @apply text-neutralGreen underline;
+  }
+  .rich-content img {
+    @apply max-w-full h-auto rounded-lg mx-auto;
+  }
+  .rich-content p:empty::before {
+    content: "\00a0";
+  }
+
+  /* 에디터 전용 */
+  .rich-editor {
+    min-height: 380px;
+  }
+  .rich-editor img.ProseMirror-selectednode {
+    @apply ring-2 ring-blue-500;
+  }
+}

@@ -46,6 +46,21 @@ npm run lint      # ESLint (flat config, eslint.config.js)
 
 테스트 프레임워크는 없습니다. 변경 후에는 `npm run lint`와 `npm run build`로 확인하세요.
 
+### 로컬 Firebase Emulator (관리자 기능 테스트용)
+
+`npm run dev`는 **운영 Firebase를 그대로 사용**합니다. 관리자 화면에서 저장·업로드를 시험하면 운영 사이트가 바로 바뀌므로, 쓰기 테스트는 반드시 Emulator에서 합니다.
+
+```bash
+npm run emulators        # Auth 9099, Firestore 8080, Storage 9199, UI 4000 (Firebase CLI·Java 필요)
+npm run emulators:seed   # 다른 터미널에서: 테스트 관리자 계정, user 문서, 소개 이미지 생성 (실행할 때마다 초기화)
+npm run dev:emulator     # .env.emulator 를 읽어 Emulator에 연결된 개발 서버
+```
+
+- 테스트 관리자 계정은 `scripts/seed-emulator.mjs`에 있습니다(Emulator 안에만 존재).
+- Emulator 연결 코드는 `import.meta.env.DEV` 조건이라 운영 빌드에 포함되지 않습니다.
+- `.claude/launch.json`: `vite-dev`(운영 Firebase, 5173), `vite-emulator`(Emulator, 5174).
+- Emulator의 Firestore는 규칙 파일이 없어 모든 읽기/쓰기를 허용합니다.
+
 ## 환경 변수
 
 `src/firebase/firebase_config.js`가 `.env`(git 미추적)의 `VITE_FIREBASE_*` 값을 읽습니다:
@@ -57,10 +72,13 @@ npm run lint      # ESLint (flat config, eslint.config.js)
 ```
 src/
   main.jsx, App.jsx            # 진입점, 라우팅 전부 App.jsx에 정의
-  firebase/firebase_config.js  # auth, db, storage 를 export (모든 Firebase 접근의 출발점)
+  firebase/firebase_config.js  # auth, db, storage 를 export (모든 Firebase 접근의 출발점), Emulator 연결
+  firebase/introducePage.js    # 협회 소개 페이지 콘텐츠 읽기/저장, 에디터 이미지 업로드
   components/
     Navbar.jsx, Footer.jsx     # 공개 레이아웃
     ui/                        # Button, Card (경로 별칭 @ui)
+    editor/RichTextEditor.jsx  # TipTap 리치 텍스트 에디터 (관리자 화면에서 lazy 로드)
+    editor/RichContent.jsx     # 에디터 HTML을 DOMPurify로 정리해 표시 (.rich-content 스타일은 index.css)
     pages/                     # 공개 페이지: Home, About, Lecture, Registration, Faq
     pages/admin/               # 관리자: Login, ProtectedRoute, AdminLayout, Dashboard, User, Admin*
   assets/                      # 이미지 (Footer 등에서 import)
@@ -93,11 +111,13 @@ src/
 | `alarms` | 수강 신청 내역. `email`, `name`, `phone`, `lectureKey`(lectures 문서 id), `lectureId`, `title`, `createdAt` | Registration(생성), Dashboard |
 | `faqs`, `faqCategories` | FAQ와 카테고리 | Faq, AdminFaq |
 | `user` | 관리자 계정 목록(`uid` 필드) | Login, User, Dashboard |
+| `pages` | 페이지별 콘텐츠. `introduce` 문서: `displayMode`(`image`/`text`), `contentHtml`, `updatedAt`. 문서가 없거나 읽기 실패 시 이미지 표시 | About, AdminIntroduce |
 
 ### Storage 경로
 
 - `home/` — 홈 화면 이미지 (`home/${type}${n}.png` 형식 등, AdminHome에서 관리)
 - `introduce/imageFile` — 협회 소개 이미지 (단일 파일 덮어쓰기)
+- `introduce/content/<시각>-<랜덤>.<확장자>` — 협회 소개 에디터 본문에 넣은 이미지
 - `lecture/imageFile` — 교육과정 소개 이미지 (단일 파일 덮어쓰기)
 - `registration/${lectureId}/imageFile` — 강의별 이미지
 

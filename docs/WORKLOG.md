@@ -6,6 +6,88 @@
 
 ---
 
+## 2026-11-23 — 협회 소개 페이지: 이미지/텍스트 선택 + 리치 텍스트 에디터
+
+- 브랜치: `feat/about-editor` (PR #2 `docs/worklog-first-deploy` 위에서 시작, 아직 머지·배포 안 함)
+- 사용자 확인: 에디터 방식 제안(TipTap / Quill / Toast UI / CKEditor·TinyMCE) 중 **추천안(TipTap + Emulator 확인)**으로 진행하기로 사용자가 선택함. 화면 변경(관리자 화면 구성, 소개 페이지 텍스트 표시)은 이 요청 범위에 포함.
+
+### 배경 / 목적
+- 소개 페이지(`/about`)는 Storage `introduce/imageFile` 이미지 한 장만 보여줄 수 있었습니다. 현재 운영 이미지는 1448×10240 PNG(약 1.4MB)로, 글을 통째로 이미지로 만든 형태라 수정이 어렵고 로딩도 무겁습니다.
+- 요청: 이미지와 텍스트 중 선택해서 표시, 긴 글을 스크롤로 읽을 수 있게, 편리한 에디터, 블로그처럼 글 중간에 이미지 첨부.
+
+### 변경 내용
+
+**1. 데이터 구조 (신규)**
+- Firestore `pages/introduce`: `displayMode`(`"image"` | `"text"`), `contentHtml`(에디터 HTML), `updatedAt`.
+- Storage `introduce/content/<시각>-<랜덤>.<확장자>`: 에디터 본문 이미지. 본문에는 URL만 저장(Firestore 문서 1MB 제한 때문에 base64로 넣지 않음).
+- `src/firebase/introducePage.js`: 읽기(`loadIntroducePage`), 저장(`saveIntroducePage`, `setDoc` merge), 이미지 업로드(`uploadIntroduceContentImage`).
+
+**2. 에디터 `src/components/editor/RichTextEditor.jsx` (신규, TipTap 3.35)**
+- 툴바: 본문/큰 제목/작은 제목, 굵게·기울임·밑줄·취소선, 글머리·번호 목록, 인용, 구분선, 왼쪽·가운데·오른쪽 정렬, 링크, 이미지, 실행 취소·다시 실행. 툴바는 스크롤해도 위에 고정(sticky).
+- 이미지 넣기: 툴바 버튼(여러 장 선택 가능), 붙여넣기(Ctrl+V), 끌어다 놓기(놓은 위치에 삽입). jpeg·png·gif·webp, 5MB 이하(기존 이미지 업로드와 같은 기준 + webp). 업로드 중 표시, 실패 시 메시지.
+- 관리자 화면에서만 `React.lazy`로 불러와 별도 파일(`RichTextEditor-*.js`, 435KB / gzip 138KB)로 분리 → 공개 페이지는 이 파일을 받지 않음.
+
+**3. 공개 표시 `src/components/editor/RichContent.jsx` (신규)**
+- 저장된 HTML을 **DOMPurify 3.5**로 정리한 뒤 표시(XSS 방지). 현재 로그인만 하면 관리자 화면에 들어갈 수 있는 문제(IMPROVEMENTS 1순위)가 있어 반드시 필요.
+- 링크는 새 탭 + `rel="noopener noreferrer"`, 이미지는 `loading="lazy"`.
+
+**4. 스타일 `src/index.css`**
+- `.rich-content` 클래스 안에만 적용되는 본문 스타일(제목, 목록, 인용, 링크, 이미지 등). 에디터와 공개 화면이 같은 스타일을 써서 작성한 모양 그대로 보임. 다른 화면에는 영향 없음.
+- 처음엔 `@tailwindcss/typography`를 설치했으나, 취약한 `postcss-selector-parser`(moderate 2개)를 함께 설치해서 제거하고 직접 작성함.
+
+**5. 관리자 화면 `src/components/pages/admin/AdminIntroduce.jsx`**
+- 제목 "협회소개 이미지 업로드" → "협회소개", 그 아래에 새 카드 추가:
+  - "소개 페이지 표시 방식": 이미지 / 텍스트(에디터) 선택
+  - "텍스트 편집": 에디터. 표시 방식이 이미지여도 미리 작성해 둘 수 있음
+  - 저장 버튼(변경이 있을 때만 활성), "소개 페이지 열기" 링크, 마지막 저장 시각, 저장 안 한 변경 경고(페이지를 떠날 때 브라우저 확인 창)
+  - 저장 시 검사: 텍스트 모드인데 내용이 없거나, 이미지 모드인데 등록된 이미지가 없으면 저장 안 함
+- 기존 "협회소개 이미지 업로드" 카드는 그대로 유지(소제목만 추가).
+
+**6. 공개 화면 `src/components/pages/About.jsx`**
+- `pages/introduce`를 읽어 `displayMode === "text"`이고 내용이 있으면 에디터 글을, 아니면 기존 이미지를 표시.
+- **문서가 없거나 읽기에 실패하면 기존처럼 이미지 표시** → 배포해도 관리자가 텍스트 모드로 저장하기 전까지 운영 화면은 그대로.
+- 제목·소개 문구 영역은 변경 없음. 본문 폭은 읽기 좋게 `max-w-3xl`.
+
+**7. 로컬 테스트 환경 (Firebase Emulator)**
+- `firebase.json`에 `emulators` 설정 추가(Auth 9099, Firestore 8080, Storage 9199, UI 4000). `hosting`/`storage` 설정은 그대로이며, 배포에는 영향 없음. (이 파일의 `ignore` 배열 줄바꿈은 사용자가 `firebase init`을 실행하며 바뀐 것으로, 내용은 같음)
+- `src/firebase/firebase_config.js`: `import.meta.env.DEV && VITE_USE_FIREBASE_EMULATOR === "true"`일 때만 Emulator에 연결. 운영 빌드 결과물에 연결 코드가 없는 것을 확인.
+- `.env.emulator`(신규, 비밀 값 없음): `VITE_USE_FIREBASE_EMULATOR=true`.
+- `package.json` 스크립트: `dev:emulator`, `emulators`, `emulators:seed`.
+- `scripts/seed-emulator.mjs`(신규): Emulator 초기화 후 테스트 관리자 계정, `user` 문서, `introduce/imageFile`(파비콘 이미지) 생성. 127.0.0.1에만 요청.
+- `.claude/launch.json`: `vite-emulator`(5174) 추가.
+- 개발 서버(`npm run dev`)가 운영 Firebase를 그대로 쓰기 때문에, 관리자 저장 테스트를 운영에서 하면 `ima.vision`이 즉시 바뀌는 문제를 피하기 위한 것.
+
+**8. 패키지**
+- 추가: `@tiptap/react`, `@tiptap/pm`, `@tiptap/starter-kit`, `@tiptap/extension-image`, `@tiptap/extension-text-align` (모두 3.35.0), `dompurify` 3.5.0.
+- `npm audit`: 4개(high, 기존 `@grpc/grpc-js` 계열)로 변화 없음.
+
+### 확인 / 결과
+- `npm run build` 성공. `npm run lint` 오류 19개로 기존과 같음(새 파일에서 오류 없음).
+- 번들: 공개용 `index-*.js` 1,087KB → 1,127KB(gzip 289 → 305KB, DOMPurify 등). 에디터는 별도 파일 435KB(관리자 화면에서만 로드).
+- **Emulator에서 브라우저 확인** (운영 데이터 사용 안 함, 이미지 URL이 `127.0.0.1:9199`인 것으로 확인):
+  - 문서가 없을 때 소개 페이지 → 기존 이미지 표시
+  - 테스트 관리자로 로그인 → `/dashboard/introduce`에 표시 방식·에디터 표시
+  - 긴 글 붙여넣기(제목, 목록, 인용, 링크 포함 약 2,400자) → 서식 유지
+  - 이미지 붙여넣기 → Storage `introduce/content/`에 업로드되고 커서 위치(2번째 문단 뒤)에 삽입
+  - 툴바 "굵게" 클릭 → `<strong>` 적용
+  - 텍스트 모드로 저장 → 소개 페이지에 글·이미지·링크 표시, 페이지 높이 2,752px로 스크롤해서 끝(푸터)까지 확인
+  - 다시 열면 저장한 내용이 에디터에 불러와지고, 변경이 없으면 저장 버튼 비활성
+  - 이미지 모드로 저장 → 소개 페이지에 기존 이미지 표시, 텍스트 숨김
+  - 모바일(375px): 가로 스크롤 없음, 첨부 이미지 343px로 화면 폭에 맞춤
+  - **XSS 확인**: Firestore에 `onerror`가 달린 img, `<script>`, `javascript:` 링크, `<iframe>`을 직접 넣어도 공개 화면에서 모두 제거되고 실행되지 않음
+- **운영 Firebase 기준 확인(읽기만)**:
+  - `npm run dev`로 소개 페이지 → 기존 이미지 그대로 표시(운영에는 `pages/introduce` 문서 없음)
+  - 운영 Firestore `pages/introduce`를 비로그인으로 읽으면 404(문서 없음) → 읽기 권한은 있음. **쓰기 권한은 확인하지 못함**(운영에 쓰기 테스트를 하지 않음).
+
+### 남은 일
+- 운영 배포 전 사용자 확인 필요(개발 원칙 8번). 배포 후 실제 관리자 계정으로 첫 저장을 해 봐야 Firestore 쓰기 권한이 확인됩니다. 권한 오류가 나면 저장 실패 메시지가 뜨고, 소개 페이지는 그대로입니다.
+- 에디터에서 지운 이미지가 Storage에 남는 문제, Emulator 규칙이 전부 허용인 점은 IMPROVEMENTS.md에 기록.
+
+### 정정
+- 앞서 IMPROVEMENTS.md에 적은 "배포 사이트에 파비콘 없음"은 잘못된 판단이었습니다. Vite가 파비콘을 `dist/assets/`로 복사하며, 운영 사이트에서도 정상 제공 중입니다. 해당 항목을 정정했습니다.
+
+---
+
 ## 2026-11-23 — 개발 원칙에 "운영 배포 최소화" 추가
 
 - 파일: `CLAUDE.md` (개발 원칙 8번)

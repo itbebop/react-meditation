@@ -2,9 +2,13 @@ import React, { useState, useEffect } from "react";
 import { getStorage, ref, getDownloadURL } from "firebase/storage";
 import { LazyLoadImage } from "react-lazy-load-image-component"; // Lazy Load Image 추가
 import "react-lazy-load-image-component/src/effects/blur.css"; // 블러 효과 스타일 추가
+import { DISPLAY_MODE, loadIntroducePage } from "../../firebase/introducePage";
+import RichContent from "../editor/RichContent";
 
 const About = () => {
   const [imageUrl, setImageUrl] = useState("");
+  // null: 아직 확인 전. 확인이 끝나면 { displayMode, contentHtml }
+  const [page, setPage] = useState(null);
 
   useEffect(() => {
     const fetchImage = async () => {
@@ -18,8 +22,23 @@ const About = () => {
       }
     };
 
+    // 표시 방식 설정을 읽지 못하면(문서 없음, 권한 없음 등) 기존처럼 이미지를 보여줌
+    const fetchPage = async () => {
+      try {
+        setPage(await loadIntroducePage());
+      } catch (error) {
+        console.error("소개 페이지 설정 가져오기 실패:", error.message);
+        setPage({ displayMode: DISPLAY_MODE.IMAGE, contentHtml: "" });
+      }
+    };
+
     fetchImage();
+    fetchPage();
   }, []);
+
+  const showText =
+    page?.displayMode === DISPLAY_MODE.TEXT && page.contentHtml !== "";
+  const showImage = page !== null && !showText;
 
   return (
     <div id="about" className="px-4 py-16 mt-10">
@@ -31,8 +50,11 @@ const About = () => {
           <p className="mt-4 text-gray-600">
             사단법인 국제명상협회를 소개합니다.
           </p>
+          {showText && (
+            <RichContent html={page.contentHtml} className="mt-10 max-w-3xl" />
+          )}
           {/* Lazy Load Image 적용 */}
-          {imageUrl && (
+          {showImage && imageUrl && (
             <LazyLoadImage
               src={imageUrl}
               alt="소개 이미지"

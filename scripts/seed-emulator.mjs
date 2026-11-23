@@ -79,6 +79,28 @@ async function main() {
     );
   }
 
+  // 홈 슬라이드 이미지 - 운영과 같은 파일 이름(확장자 없음)
+  // 홈 화면이 읽는 것: PC1~3(PC), mobileImg1(모바일) / 쓰이지 않는 것: Mobile1, Mobile2, pcImg1
+  const homeAssets = {
+    PC1: "IMA_favicon.png",
+    PC2: "src/assets/youtube_icon.png",
+    PC3: "src/assets/naver_cafe_icon.png",
+    mobileImg1: "src/assets/instagram_icon.png",
+    Mobile1: "IMA_favicon.png",
+    Mobile2: "IMA_favicon.png",
+    pcImg1: "IMA_favicon.png",
+  };
+  for (const [name, file] of Object.entries(homeAssets)) {
+    await call(
+      `${STORAGE}/upload/storage/v1/b/${bucket}/o?uploadType=media&name=${encodeURIComponent(`home/${name}`)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "image/png", Authorization: "Bearer owner" },
+        body: fs.readFileSync(path.join(root, file)),
+      }
+    );
+  }
+
   // 4. 강의(lectures) - 운영과 같은 구조(order 없음, 이미지 registration/LEC-n/imageFile)
   const lectures = [
     { lectureId: "LEC-1", category: "필수 과정", categoryColor: "#f59e0b", title: "샘플 강의 1", lecturer: "강사 가", lectureNum: 14, lectureTime: 21, isMain: true },
@@ -118,7 +140,7 @@ async function main() {
 
   console.log("Emulator 테스트 데이터 준비 완료");
   console.log(`- 관리자 계정: ${TEST_ADMIN.email} (비밀번호는 scripts/seed-emulator.mjs 참고)`);
-  console.log("- user 컬렉션 등록, introduce·lecture 이미지 업로드, 샘플 강의 5개");
+  console.log("- user 컬렉션 등록, introduce·lecture·home 이미지 업로드, 샘플 강의 5개");
 }
 
 main().catch((e) => {

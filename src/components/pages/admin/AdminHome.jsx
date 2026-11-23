@@ -10,6 +10,14 @@ import { storage } from "../../../firebase/firebase_config";
 import { Button } from "@ui/Button";
 import { Card, CardContent } from "@ui/Card";
 
+// Storage에 저장되는 파일 이름 (홈 화면 Home.jsx가 읽는 이름과 반드시 같아야 함)
+// - 홈 PC 화면: home/PC1, PC2 … (확장자 없음, "PC" + 숫자)
+// - 홈 모바일 화면: home/mobileImg1, mobileImg2 … (확장자 없음, "mobileImg" + 숫자, 대소문자 무관)
+// 예전에는 업로드 이름에 .png가 붙거나(PC1.png) 모바일을 Mobile1로 저장해서
+// 관리자에서 올린 이미지가 홈 화면에 나오지 않았음 (IMPROVEMENTS H1·H2)
+const STORAGE_NAME_PREFIX = { PC: "PC", Mobile: "mobileImg" };
+const storageFileName = (type, index) => `${STORAGE_NAME_PREFIX[type]}${index + 1}`;
+
 export default function AdminHome() {
   // 상태 초기화 부분 수정 (모든 배열을 독립 객체로 생성)
   const [selectedFiles, setSelectedFiles] = useState(
@@ -52,7 +60,7 @@ export default function AdminHome() {
           .fill(null)
           .map(async (_, i) => {
             ["PC", "Mobile"].forEach(async (type) => {
-              const fileName = `${type}${i + 1}`;
+              const fileName = storageFileName(type, i);
               if (existingFiles.includes(fileName)) {
                 try {
                   const url = await getDownloadURL(
@@ -119,7 +127,7 @@ export default function AdminHome() {
       });
       return;
     }
-    const storageRef = ref(storage, `home/${type}${index + 1}.png`);
+    const storageRef = ref(storage, `home/${storageFileName(type, index)}`);
     const uploadTask = uploadBytesResumable(
       storageRef,
       selectedFiles[index][type]
@@ -178,8 +186,7 @@ export default function AdminHome() {
 
   const handleDeleteImage = async (index, type) => {
     try {
-      // 파일명 생성 로직 수정 (인덱스 +1 제거)
-      const fileName = `${type}${index + 1}`;
+      const fileName = storageFileName(type, index);
       const fileRef = ref(storage, `home/${fileName}`);
 
       await deleteObject(fileRef);

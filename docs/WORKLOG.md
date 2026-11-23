@@ -6,6 +6,57 @@
 
 ---
 
+## 2026-11-23 — 홈 화면 관리: 올린 이미지가 홈에 안 나오던 문제(H1·H2) 수정, 개발 원칙 10번 추가
+
+- 브랜치: `fix/home-image-names` (`docs/worklog-lecture-editor-deploy` 위에서 시작, 아직 머지·배포 안 함)
+- 사용자 요청: "개발 원칙에 사용자는 고연령의 컴퓨터나 코딩 등에 대해서 전혀 모르는 사람이라는 것에 대한 고려를 추가해주고 계획은 기록만 해두고 이전의 H1, H2만 수정하자"
+
+### 배경 / 목적
+- 홈 화면(`Home.jsx`)은 Storage `home/`에서 파일 이름 규칙으로 슬라이드를 찾음: PC는 정확히 `PC<숫자>`, 모바일은 `mobileImg<숫자>`(대소문자 무관, 확장자 없음)
+- 운영 `home/` 파일(읽기만 확인): `PC1`, `PC2`, `PC3`, `mobileImg1`(홈에 나옴), `Mobile1`, `Mobile2`, `pcImg1`(홈에 안 나옴)
+- **H1**: 2025-11-14 커밋 `cd23286`에서 관리자 업로드 경로가 `home/PC1` → `home/PC1.png`로 바뀜. 불러오기·삭제는 `PC1`을 써서 이름이 어긋남. 이 코드는 2026-11-23 PR #1 배포로 운영에 처음 반영됨 → 그 뒤 관리자에서 올리면 "성공"으로 보이지만 홈에는 안 나옴 (확인 시점에 운영에 `.png` 파일은 없어 실제 피해는 없었음)
+- **H2**: 관리자는 모바일을 `Mobile1~5`로 저장·표시했지만 홈은 `mobileImg<숫자>`만 읽음 → 모바일 이미지는 관리자에서 올려도 홈에 나온 적이 없음. 홈 모바일의 `mobileImg1`은 관리자 화면에서 보이지 않았음
+
+### 변경 내용
+**1. `src/components/pages/admin/AdminHome.jsx`**
+```diff
++const STORAGE_NAME_PREFIX = { PC: "PC", Mobile: "mobileImg" };
++const storageFileName = (type, index) => `${STORAGE_NAME_PREFIX[type]}${index + 1}`;
+ ...
+-              const fileName = `${type}${i + 1}`;                       // 불러오기
++              const fileName = storageFileName(type, i);
+-    const storageRef = ref(storage, `home/${type}${index + 1}.png`);  // 업로드
++    const storageRef = ref(storage, `home/${storageFileName(type, index)}`);
+-      const fileName = `${type}${index + 1}`;                         // 삭제
++      const fileName = storageFileName(type, index);
+```
+- 불러오기·업로드·삭제가 모두 홈 화면과 같은 이름(`PC<번호>`, `mobileImg<번호>`, 확장자 없음)을 쓰도록 통일
+- **홈 화면 코드(`Home.jsx`)는 바꾸지 않음** → 지금 홈 모습(PC 3장, 모바일 `mobileImg1` 1장) 그대로
+- **관리자 화면에서 달라 보이는 점**: 모바일 1번 칸에 지금 홈에 실제로 나오는 `mobileImg1`이 보이고, 2번 칸은 "없음"으로 바뀜(예전엔 홈에 안 나오는 `Mobile1`, `Mobile2`가 보였음). `Mobile1`, `Mobile2`, `pcImg1` 파일은 지우지 않고 Storage에 남겨 둠
+- 관리자 화면의 다른 문제(H3~H11)는 손대지 않음
+
+**2. `CLAUDE.md` 개발 원칙 10번 추가**: 사이트를 쓰는 분들(관리자·방문자)은 고연령이고 컴퓨터·코딩을 모르는 분들 → 쉬운 우리말, 큰 버튼(아이콘만 있는 버튼 금지), 적은 단계(끌어다 놓기만 있는 기능 금지), 되돌릴 수 없는 작업 확인, 쉬운 오류 안내, 진행·결과 표시
+
+**3. `docs/IMPROVEMENTS.md`**: 홈 화면 관리 전체 개편 계획을 "보류"로 기록, H1·H2 해결 표시
+
+**4. `scripts/seed-emulator.mjs`**: 운영과 같은 `home/` 파일 구성(`PC1~3`, `mobileImg1`, `Mobile1`, `Mobile2`, `pcImg1`) 추가
+
+### 확인 / 결과
+- `npm run build` 성공, `npm run lint` 16개로 이전과 같음(`AdminHome.jsx`의 `handleFileChange` 미사용 오류는 기존 H4)
+- **Emulator에서 확인** (운영 데이터 사용 안 함):
+  - 관리자 홈 화면: PC 1~3번 칸에 `PC1~3`, 모바일 1번 칸에 `mobileImg1` 표시(홈과 같음), 모바일 2번은 "없음"
+  - PC 4번 칸, 모바일 2번 칸에 업로드 → Storage에 `home/PC4`, `home/mobileImg2`(확장자 없음)로 저장
+  - 홈 화면(1440px): PC 슬라이드 4장(`PC1~4`) / 모바일 슬라이드 2장(`mobileImg1`, `mobileImg2`) → **올린 이미지가 홈에 나옴**
+  - 관리자 화면 새로고침 후에도 올린 이미지가 칸에 그대로 보임
+  - 삭제 → `PC4`, `mobileImg2`만 지워지고 `Mobile1`, `Mobile2`, `pcImg1`은 그대로
+- 운영에서는 아직 확인하지 않음(배포 전)
+
+### 남은 일
+- 운영 배포는 사용자 확인 후(개발 원칙 8번)
+- 남은 H3~H11은 IMPROVEMENTS의 전체 개편 계획(보류)에서 다룸. 참고: 지금도 업로드·삭제는 확인 없이 바로 홈에 반영됨(H3)
+
+---
+
 ## 2026-11-23 — PR #6 머지 및 배포 (교육 과정 에디터 운영 반영)
 
 - 머지 커밋: `91c3110` (PR itbebop/react-meditation#6 → `main`). 문서 커밋 `e7c5b44`도 함께 반영됨.

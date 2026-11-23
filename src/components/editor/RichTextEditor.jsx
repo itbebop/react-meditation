@@ -4,6 +4,20 @@ import StarterKit from "@tiptap/starter-kit";
 import Image from "@tiptap/extension-image";
 import TextAlign from "@tiptap/extension-text-align";
 import {
+  TextStyle,
+  FontFamily,
+  FontSize,
+  Color,
+  BackgroundColor,
+} from "@tiptap/extension-text-style";
+import {
+  FONT_FAMILIES,
+  FONT_SIZES,
+  TEXT_COLORS,
+  HIGHLIGHT_COLORS,
+  loadAllFonts,
+} from "./textStyles";
+import {
   Bold,
   Italic,
   Underline as UnderlineIcon,
@@ -22,6 +36,8 @@ import {
   ImagePlus,
   Undo2,
   Redo2,
+  Baseline,
+  Highlighter,
 } from "lucide-react";
 
 const ALLOWED_IMAGE_TYPES = [
@@ -59,6 +75,11 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
       }),
       Image.configure({ inline: false }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
+      TextStyle,
+      FontFamily,
+      FontSize,
+      Color,
+      BackgroundColor,
     ],
     content: initialHtml || "",
     editorProps: {
@@ -120,6 +141,11 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
     insertFilesRef.current = insertFiles;
   });
 
+  // 에디터에서는 글꼴 목록 전체를 미리보기할 수 있도록 모두 불러옴
+  useEffect(() => {
+    loadAllFonts();
+  }, []);
+
   const state = useEditorState({
     editor,
     selector: ({ editor }) =>
@@ -139,6 +165,10 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
             alignCenter: editor.isActive({ textAlign: "center" }),
             alignRight: editor.isActive({ textAlign: "right" }),
             link: editor.isActive("link"),
+            fontFamily: editor.getAttributes("textStyle").fontFamily || "",
+            fontSize: editor.getAttributes("textStyle").fontSize || "",
+            color: editor.getAttributes("textStyle").color || "",
+            backgroundColor: editor.getAttributes("textStyle").backgroundColor || "",
             canUndo: editor.can().undo(),
             canRedo: editor.can().redo(),
           }
@@ -173,6 +203,59 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
         <ToolButton title="작은 제목" active={state.h3} onClick={() => c().toggleHeading({ level: 3 }).run()}>
           <Heading3 size={16} />
         </ToolButton>
+        <Divider />
+        <select
+          title="글꼴"
+          aria-label="글꼴"
+          value={matchOption(FONT_FAMILIES, state.fontFamily)}
+          onChange={(e) =>
+            e.target.value
+              ? c().setFontFamily(e.target.value).run()
+              : c().unsetFontFamily().run()
+          }
+          className="h-8 rounded border border-gray-300 px-2 py-0 text-sm text-gray-700"
+        >
+          {FONT_FAMILIES.map((f) => (
+            <option key={f.label} value={f.value} style={{ fontFamily: f.value || undefined }}>
+              {f.label}
+            </option>
+          ))}
+        </select>
+        <select
+          title="글자 크기"
+          aria-label="글자 크기"
+          value={matchOption(FONT_SIZES, state.fontSize)}
+          onChange={(e) =>
+            e.target.value
+              ? c().setFontSize(e.target.value).run()
+              : c().unsetFontSize().run()
+          }
+          className="h-8 rounded border border-gray-300 px-2 py-0 text-sm text-gray-700"
+        >
+          {FONT_SIZES.map((s) => (
+            <option key={s.label} value={s.value}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+        <ColorPicker
+          title="글자 색"
+          icon={<Baseline size={16} />}
+          colors={TEXT_COLORS}
+          current={state.color}
+          onSelect={(v) => (v ? c().setColor(v).run() : c().unsetColor().run())}
+          resetLabel="기본 색"
+        />
+        <ColorPicker
+          title="형광펜"
+          icon={<Highlighter size={16} />}
+          colors={HIGHLIGHT_COLORS}
+          current={state.backgroundColor}
+          onSelect={(v) =>
+            v ? c().setBackgroundColor(v).run() : c().unsetBackgroundColor().run()
+          }
+          resetLabel="형광펜 없음"
+        />
         <Divider />
         <ToolButton title="굵게 (Ctrl+B)" active={state.bold} onClick={() => c().toggleBold().run()}>
           <Bold size={16} />
@@ -244,6 +327,92 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
       <p className="px-4 pb-2 text-xs text-gray-400">
         이미지는 이미지 버튼, 붙여넣기(Ctrl+V), 끌어다 놓기로 넣을 수 있습니다. (jpeg·png·gif·webp, 5MB 이하)
       </p>
+    </div>
+  );
+}
+
+// 현재 값이 목록에 없으면(다른 곳에서 붙여넣은 글꼴 등) 빈 값으로 표시
+// (글꼴 따옴표 종류·공백 차이는 무시)
+function matchOption(options, value) {
+  const norm = (s) => (s || "").replace(/["'\s]/g, "").toLowerCase();
+  const found = options.find((o) => norm(o.value) === norm(value));
+  return found ? found.value : "";
+}
+
+// 브라우저가 "rgb(28, 114, 68)" 형태로 돌려주는 색을 "#1c7244"로 맞춤
+function toHex(color) {
+  if (!color) return "";
+  const m = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+  if (!m) return color.toLowerCase();
+  return "#" + m.slice(1, 4).map((n) => Number(n).toString(16).padStart(2, "0")).join("");
+}
+
+// 글자 색·형광펜 선택 팝업
+function ColorPicker({ title, icon, colors, current, onSelect, resetLabel }) {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const close = (e) => {
+      if (!boxRef.current?.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", close);
+    return () => document.removeEventListener("mousedown", close);
+  }, [open]);
+
+  const choose = (value) => {
+    onSelect(value);
+    setOpen(false);
+  };
+
+  return (
+    <div ref={boxRef} className="relative">
+      <button
+        type="button"
+        title={title}
+        aria-label={title}
+        aria-expanded={open}
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => setOpen((o) => !o)}
+        className="p-2 rounded hover:bg-gray-100 text-gray-600 flex flex-col items-center"
+      >
+        {icon}
+        <span
+          className="block w-4 h-1 mt-0.5 rounded-sm border border-gray-200"
+          style={{ backgroundColor: current || "transparent" }}
+        />
+      </button>
+      {open && (
+        <div className="absolute left-0 top-full mt-1 z-20 w-44 rounded-lg border border-gray-200 bg-white p-2 shadow-lg">
+          <div className="grid grid-cols-4 gap-2">
+            {colors.map((col) => (
+              <button
+                key={col.value}
+                type="button"
+                title={col.label}
+                aria-label={`${title}: ${col.label}`}
+                onMouseDown={(e) => e.preventDefault()}
+                onClick={() => choose(col.value)}
+                className={`h-7 w-7 rounded border ${
+                  toHex(current) === col.value.toLowerCase()
+                    ? "ring-2 ring-blue-500 border-white"
+                    : "border-gray-300"
+                }`}
+                style={{ backgroundColor: col.value }}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => choose("")}
+            className="mt-2 w-full rounded px-2 py-1 text-sm text-gray-600 hover:bg-gray-100"
+          >
+            {resetLabel}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

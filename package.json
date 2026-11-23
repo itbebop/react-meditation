@@ -5,11 +5,20 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:emulator": "vite --mode emulator",
+    "emulators": "firebase emulators:start --only auth,firestore,storage --project ima-meditation",
+    "emulators:seed": "node scripts/seed-emulator.mjs",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tiptap/extension-image": "^3.35.0",
+    "@tiptap/extension-text-align": "^3.35.0",
+    "@tiptap/pm": "^3.35.0",
+    "@tiptap/react": "^3.35.0",
+    "@tiptap/starter-kit": "^3.35.0",
+    "dompurify": "^3.5.0",
     "firebase": "^11.5.0",
     "flowbite-react": "^0.10.2",
     "lucide-react": "^0.483.0",

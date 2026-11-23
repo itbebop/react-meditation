@@ -6,6 +6,39 @@
 
 ---
 
+## 2026-11-23 — PR #1 머지 및 첫 자동 배포 (운영 반영)
+
+- 머지 커밋: `50048d7` (PR itbebop/react-meditation#1 → `main`, merge commit 방식)
+- 배포 실행: GitHub Actions run `45174805084` (`Deploy to Firebase Hosting`)
+- 사용자 확인: 사용자가 "머지하고 배포 확인"을 요청함
+
+### 목적
+- 취약점 패치, `index.html` 오타 스크립트 제거, 새 배포 워크플로를 운영(`ima.vision`)에 반영.
+- 이 PR에는 이전에 push된 사용자 커밋 2개(`5e31e3a` 취약점 개선, `f6d7e9f` 인스타그램 아이콘 추가·관리자 수강신청 화면 변경)도 포함되어 함께 운영에 반영됨.
+
+### 결과
+- 워크플로 전 단계 성공(secret 확인 → `npm ci` → 빌드 → live 배포), 약 1분.
+- 운영 번들 변경 확인:
+  | | 배포 전 | 배포 후 |
+  |---|---|---|
+  | JS | `assets/index-BWmIs3C4.js` | `assets/index-LegiaGDH.js` |
+  | 오타 스크립트(`cdn.tailwindscss.com`) | 있음 | 없음 |
+- `ima.vision`과 `ima-meditation.web.app` 모두 새 번들을 내려줌.
+- 배포된 JS 해시가 로컬 `.env`로 빌드한 해시(`index-LegiaGDH.js`)와 동일 → GitHub secrets 값이 로컬 `.env`와 일치함을 간접 확인(Vite가 환경변수를 번들에 넣기 때문).
+- 운영 사이트 브라우저 확인:
+  - 홈: 이미지 6/6 로드, 강의 데이터 표시, 페이지 로드 약 1.5초(이전에는 오타 스크립트 때문에 약 20초 이상).
+  - 수강 신청: 강의 4개, 이미지 6/6 로드.
+  - FAQ: 질문 12개 표시.
+  - 비로그인 `/dashboard` → `/admin`으로 이동.
+  - 콘솔 오류 없음.
+- **관리자 로그인 후 화면은 확인하지 못함**(로그인 계정 없음).
+
+### 참고
+- Actions 실행 시 경고: `actions/checkout@v4`, `actions/setup-node@v4`가 Node.js 20 기반이라 지원 종료 예정(현재는 Node 24로 강제 실행되어 동작함). IMPROVEMENTS.md에 기록.
+- 문제가 생기면 Firebase 콘솔 → Hosting → 출시 기록에서 이전 버전(`index-BWmIs3C4.js`)으로 롤백 가능.
+
+---
+
 ## 2026-11-23 — 배포 워크플로를 Firebase Hosting용으로 변경
 
 - 커밋: `b824208` (PR itbebop/react-meditation#1)
@@ -42,6 +75,7 @@
 
 ### 진행 상황
 - 2026-11-23: 사용자가 GitHub secrets 8개 등록. `gh secret list`로 이름이 워크플로와 모두 일치함을 확인(`FIREBASE_SERVICE_ACCOUNT_IMA_MEDITATION`, `VITE_FIREBASE_*` 7개). 값은 GitHub에서 읽을 수 없어 확인하지 못함 → 첫 실행(머지 시)에서 검증됨.
+- 2026-11-23: PR 머지 후 첫 실행 성공, 운영 반영 확인(위 "PR #1 머지 및 첫 자동 배포" 항목).
 
 ### 남은 일 (사용자 작업 필요)
 - [x] GitHub 저장소 Settings → Secrets and variables → Actions에 등록:

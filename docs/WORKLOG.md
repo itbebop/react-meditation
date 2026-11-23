@@ -32,7 +32,7 @@
 - 로컬 Emulator(firebase CLI, Firestore용 java)와 Emulator용 개발 서버(5174)를 종료함.
 
 ### 남은 일
-- 관리자 계정으로 `/dashboard/introduce`에서 첫 저장 → 성공하면 표시 방식과 글이 소개 페이지에 반영. "저장 실패: Missing or insufficient permissions"가 나오면 Firestore 규칙에 `pages` 컬렉션 쓰기 허용 추가 필요.
+- [x] 관리자 계정으로 `/dashboard/introduce`에서 첫 저장 → **2026-11-23 사용자가 운영에서 저장 성공을 확인함.** 운영 Firestore `pages` 컬렉션 쓰기 권한 문제 없음.
 
 ---
 

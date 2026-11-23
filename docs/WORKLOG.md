@@ -6,9 +6,35 @@
 
 ---
 
+## 2026-11-23 — PR #6 머지 및 배포 (교육 과정 에디터 운영 반영)
+
+- 머지 커밋: `91c3110` (PR itbebop/react-meditation#6 → `main`). 문서 커밋 `e7c5b44`도 함께 반영됨.
+- 배포 실행: GitHub Actions run `45193767159`, 전 단계 성공
+- 사용자 확인: 사용자가 "머지하고 배포 확인"을 요청함
+
+### 결과
+- 운영 번들 변경 확인:
+  | | 배포 전 | 배포 후 |
+  |---|---|---|
+  | JS | `assets/index-DKvQ3Nm1.js` | `assets/index-CsDYimMD.js` |
+  | CSS | `assets/index-Bk5YI8v3.css` | `assets/index-Bk5YI8v3.css` (변화 없음) |
+- 배포된 파일 이름이 로컬 `main`(`91c3110`) 빌드 결과와 같음.
+- 운영 사이트 브라우저 확인 (운영 데이터 읽기만):
+  - 교육 과정: 기존 이미지 그대로 표시(운영에 `pages/lecture` 문서가 아직 없음), 에디터 파일 불러오지 않음
+  - 협회 소개: 기존 이미지 그대로(현재 운영 설정이 이미지 모드)
+  - 수강 신청: 강의 순서 그대로
+  - 비로그인 `/dashboard/lecture` → `/admin`으로 이동
+  - 콘솔 오류 없음
+- **실제 관리자 계정으로 교육과정 화면 저장은 확인하지 못함**(로그인 계정 없음). Emulator에서는 확인 완료(아래 항목).
+
+### 남은 일
+- 관리자가 운영에서 교육과정 화면을 처음 저장할 때 성공하는지 확인(`pages/lecture` 쓰기 권한). "저장 실패: Missing or insufficient permissions"가 나오면 Firestore 규칙 확인 필요
+
+---
+
 ## 2026-11-23 — 교육 과정 페이지에 이미지/텍스트 선택 + 에디터 추가
 
-- 브랜치: `feat/lecture-editor` (`docs/worklog-admin-registration-deploy` 위에서 시작, 아직 머지·배포 안 함)
+- 커밋: `8d9296c` (브랜치 `feat/lecture-editor`, PR itbebop/react-meditation#6). 2026-11-23 머지·배포됨(위 항목 참고)
 - 사용자 요청: "Lecture.jsx 교육과정 화면에도 협회 소개 화면처럼 에디터를 선택적으로 넣을 수 있도록 수정"
 
 ### 배경 / 목적

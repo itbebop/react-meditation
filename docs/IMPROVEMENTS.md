@@ -19,7 +19,9 @@ Firestore 보안 규칙과 Firebase Auth 설정(회원가입 허용 여부)은 �
 
 - [ ] **사용자 추가 버튼이 쓸 수 없는 계정을 만듦**: `uid` 없이 `새사용자@example.com` 고정값을 넣습니다. 로그인은 `uid`로 확인하므로 이 계정으로는 들어갈 수 없습니다. (`User.jsx` `handleAddUser`)
 - [ ] **사용자 수정 시 화면 객체를 그대로 저장**: `updateDoc(docRef, editingUser)` 때문에 `id` 필드까지 문서에 저장됩니다. (`User.jsx` `handleSaveEdit`)
-- [ ] **배포 워크플로가 동작하지 않음**: GitHub Pages 템플릿이 그대로 남아 있고, 존재하지 않는 `npm run deploy`를 호출하며, 이메일·저장소 주소가 placeholder입니다. Node 18은 지원 종료(EOL). Firebase Hosting용으로 다시 작성하거나 삭제합니다. (`.github/workflows/deploy.yml`, `deploy.sh`)
+- [x] **배포 워크플로가 동작하지 않음**: GitHub Pages 템플릿이 그대로 남아 있었고, 존재하지 않는 `npm run deploy`를 호출했습니다. → Firebase Hosting(live) 배포로 다시 작성 (2026-11-23). `main` push 시 자동 배포 + 수동 실행, Node 22, secret 누락 시 빌드 전 중단.
+  - [ ] GitHub secrets 등록 필요: `FIREBASE_SERVICE_ACCOUNT_IMA_MEDITATION`, `VITE_FIREBASE_*` 7개. 등록 전에는 워크플로가 실패하고 배포되지 않습니다.
+  - [ ] 더 이상 쓰지 않는 `GH_PAT` secret과 `deploy.sh` 정리.
 - [ ] **모바일에서 관리자 사이드바 토글 불가**: `setMenuOpen`을 쓰는 곳이 없습니다. (`AdminLayout.jsx`)
 - [ ] **대시보드가 매번 전체 `alarms`를 읽음**: 연도 범위 계산을 위해 전체를 조회하고, 신청 건마다 `lectures`를 다시 조회합니다(N+1). 데이터가 늘면 느려지고 비용이 늘어납니다. (`Dashboard.jsx`)
 - [ ] **`lectureId` 형식 의존**: 정렬 시 `LEC-<숫자>` 형식을 가정해서, 형식이 다르거나 값이 비면 `NaN`/오류가 납니다. (`Registration.jsx`)

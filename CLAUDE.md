@@ -94,8 +94,12 @@ src/
 ## 배포
 
 - `firebase.json`: Firebase Hosting(`dist/`, 모든 경로를 `/index.html`로 rewrite) + Storage 규칙. 프로젝트는 `.firebaserc`의 `ima-meditation`.
-- 일반적인 배포: `npm run build` 후 `firebase deploy`.
-- `.github/workflows/deploy.yml`과 `deploy.sh`는 GitHub Pages용 템플릿이 남아 있는 것으로, 워크플로가 호출하는 `npm run deploy` 스크립트는 `package.json`에 없습니다. 실제 배포 경로로 보지 마세요.
+- 운영 도메인 `ima.vision`은 Firebase Hosting `ima-meditation`에서 서비스됩니다.
+- **`main`에 push(머지)되면 `.github/workflows/deploy.yml`이 자동으로 운영(live)에 배포합니다.** Actions 탭에서 수동 실행도 가능합니다. Hosting만 배포하며 Storage 규칙은 배포하지 않습니다.
+  - 필요한 GitHub secrets: `FIREBASE_SERVICE_ACCOUNT_IMA_MEDITATION`(서비스 계정 JSON), `VITE_FIREBASE_*` 7개(`.env`와 같은 값). 하나라도 없으면 빌드 전에 실패하도록 되어 있습니다.
+- 수동 배포: `npm run build` 후 `firebase deploy --only hosting`.
+- PR에는 Vercel 미리보기 배포가 붙지만 운영 사이트와는 별개입니다.
+- `deploy.sh`는 GitHub Pages용 템플릿이 남은 것으로 사용하지 않습니다.
 
 ## 사용하지 않는/생성된 파일
 

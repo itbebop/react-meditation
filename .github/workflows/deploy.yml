@@ -1,33 +1,68 @@
-name: Deploy
+name: Deploy to Firebase Hosting
 
+# main에 push(머지)되면 운영(live)에 배포합니다. Actions 탭에서 수동 실행도 가능합니다.
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+
+# 배포가 겹치지 않도록 한 번에 하나만 실행합니다.
+concurrency:
+  group: firebase-hosting-live
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    env:
+      VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+      VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+      VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+      VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+      VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+      VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+      VITE_FIREBASE_MEASUREMENT_ID: ${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # Secret이 하나라도 비어 있으면 Firebase 설정 없이 빌드된 깨진 사이트가
+      # 운영에 올라가므로, 빌드 전에 중단합니다.
+      - name: Check required secrets
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IMA_MEDITATION }}
+        run: |
+          missing=0
+          for name in VITE_FIREBASE_API_KEY VITE_FIREBASE_AUTH_DOMAIN VITE_FIREBASE_PROJECT_ID \
+                      VITE_FIREBASE_STORAGE_BUCKET VITE_FIREBASE_MESSAGING_SENDER_ID \
+                      VITE_FIREBASE_APP_ID VITE_FIREBASE_MEASUREMENT_ID FIREBASE_SERVICE_ACCOUNT; do
+            if [ -z "${!name}" ]; then
+              echo "::error::GitHub secret이 설정되지 않았습니다: $name"
+              missing=1
+            fi
+          done
+          exit $missing
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
+          node-version: 22
+          cache: npm
 
       - name: Install Dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build Project
         run: npm run build
 
-      - name: Deploy to GitHub Pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-        run: |
-          git config --global user.email "your-email@example.com"
-          git config --global user.name "your-github-username"
-          git remote set-url origin https://${{ secrets.GH_PAT }}@github.com/your-username/your-repo.git
-          npm run deploy
+      - name: Deploy to Firebase Hosting (live)
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IMA_MEDITATION }}
+          projectId: ima-meditation
+          channelId: live

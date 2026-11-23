@@ -1,6 +1,7 @@
 import React from "react";
 import youtube from "../assets/youtube_icon.png";
 import naverCafe from "../assets/naver_cafe_icon.png";
+import instagram from "../assets/instagram_icon.png";
 
 const Footer = () => {
   return (
@@ -17,12 +18,12 @@ const Footer = () => {
           <p>
             사업장 주소: 서울특별시 서초구 서래로 15, 402호(반포동, 범산빌딩)
           </p>
-          <p>전화: 02-6956-1115 | 이메일: aha098585@gmail.com</p>
+          <p>전화: 02-6956-1115 | 이메일: ananda0985@naver.com</p>
         </div>
 
         {/* Contact Us */}
         <a
-          href="mailto:aha098585@gmail.com"
+          href="mailto:ananda0985@naver.com"
           className="text-left text-base font-semibold cursor-pointer hover:underline text-gray-700 mb-1"
         >
           Contact Us
@@ -48,6 +49,16 @@ const Footer = () => {
             className="cursor-pointer hover:opacity-75"
           >
             <img src={naverCafe} alt="NaverCafe" className="w-8 h-8" />
+          </a>
+
+          {/* 인스타그램 아이콘 */}
+          <a
+            href="https://www.instagram.com/ima.0240/#"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cursor-pointer hover:opacity-75"
+          >
+            <img src={instagram} alt="instagram" className="w-8 h-8" />
           </a>
         </div>
 

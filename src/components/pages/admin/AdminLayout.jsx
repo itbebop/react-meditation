@@ -37,7 +37,14 @@ const AdminLayout = () => {
       >
         <div className="flex-grow">
           <h1 className="text-lg sm:text-xl font-bold mb-4 hidden sm:block">
-            Admin Panel
+            <a
+              href="https://ima.vision/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:underline"
+            >
+              국제명상협회
+            </a>
           </h1>
           <nav className="space-y-2">
             <Button
@@ -112,16 +119,6 @@ const AdminLayout = () => {
 
       {/* 메인 컨텐츠 영역 */}
       <div className="flex-1 bg-gray-100">
-        <header className="flex justify-between items-center bg-white p-3 sm:p-4 shadow-md">
-          <Button
-            variant="outline"
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="md:hidden"
-          >
-            <Menu size={20} />
-          </Button>
-          <h2 className="text-base sm:text-lg font-semibold">Dashboard</h2>
-        </header>
         <Outlet /> {/* 하위 라우트 컴포넌트가 렌더링되는 위치 */}
       </div>
     </div>

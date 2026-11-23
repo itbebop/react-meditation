@@ -225,7 +225,7 @@ export default function AdminFaq() {
     <div className="p-6">
       {/* Category 관리 섹션 */}
       <div>
-        <h2 className="text-2xl font-bold mb-6">Category 관리</h2>
+        <h2 className="text-2xl font-bold mb-6">카테고리 관리</h2>
         {/* 상단 버튼 영역 */}
         <div className="flex justify-end items-center gap-4 mb-6">
           <button

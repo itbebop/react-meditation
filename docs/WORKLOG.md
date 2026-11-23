@@ -40,11 +40,14 @@
 - `package-lock.json`이 `package.json`과 일치하는지 확인(`npm ci` 가능).
 - **실제 Actions 실행은 아직 하지 않았습니다.** secrets가 없어서 실행해도 "Check required secrets" 단계에서 멈춥니다.
 
+### 진행 상황
+- 2026-11-23: 사용자가 GitHub secrets 8개 등록. `gh secret list`로 이름이 워크플로와 모두 일치함을 확인(`FIREBASE_SERVICE_ACCOUNT_IMA_MEDITATION`, `VITE_FIREBASE_*` 7개). 값은 GitHub에서 읽을 수 없어 확인하지 못함 → 첫 실행(머지 시)에서 검증됨.
+
 ### 남은 일 (사용자 작업 필요)
-- GitHub 저장소 Settings → Secrets and variables → Actions에 등록:
+- [x] GitHub 저장소 Settings → Secrets and variables → Actions에 등록:
   - `FIREBASE_SERVICE_ACCOUNT_IMA_MEDITATION`: Firebase 콘솔(또는 `firebase init hosting:github`)에서 만든 서비스 계정 JSON
   - `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, `VITE_FIREBASE_STORAGE_BUCKET`, `VITE_FIREBASE_MESSAGING_SENDER_ID`, `VITE_FIREBASE_APP_ID`, `VITE_FIREBASE_MEASUREMENT_ID`: 로컬 `.env`와 같은 값
-- ⚠️ secrets 등록 **후** PR을 머지하면 그 즉시 운영에 배포됩니다.
+- ⚠️ secrets가 등록되었으므로 PR을 머지하면 그 즉시 운영에 배포됩니다. 머지 후 Actions 실행 결과와 `ima.vision` 화면을 확인하고, 문제가 있으면 Firebase 콘솔 → Hosting → 출시 기록에서 이전 버전으로 롤백합니다.
 - 더 이상 쓰지 않는 `GH_PAT` secret과 `deploy.sh` 정리.
 
 ---

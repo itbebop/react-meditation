@@ -11,7 +11,7 @@ Firestore 보안 규칙과 Firebase Auth 설정(회원가입 허용 여부)은 �
 - [ ] **Storage 쓰기 권한이 "로그인 사용자 전체"**: 관리자가 아닌 계정도 홈·소개·강의 이미지를 덮어쓸 수 있습니다. `user` 컬렉션 또는 custom claim 기준으로 제한해야 합니다.
   - 위치: `storage.rules`
 - [ ] **Firestore 규칙이 저장소에 없음**: `alarms`에 신청자 이름·전화번호·이메일이 저장됩니다. 규칙이 느슨하면 개인정보가 노출됩니다. 콘솔 규칙을 확인하고 `firestore.rules`로 저장소에서 관리하도록 옮깁니다.
-- [x] **npm 취약점**: 27개(critical 2) → 4개(high, 모두 `@grpc/grpc-js` 계열)로 줄임. 자세한 내용은 아래 "취약점 패치 기록" 참고.
+- [x] **npm 취약점**: 27개(critical 2) → 4개(high, 모두 `@grpc/grpc-js` 계열)로 줄임. 자세한 내용은 [WORKLOG.md](WORKLOG.md) 참고.
 
 > 1~3번은 "관리자 = `user` 컬렉션(또는 custom claim)"이라는 하나의 기준으로 묶어서, 보호 라우트·Storage 규칙·Firestore 규칙이 모두 그 기준을 쓰게 하는 것이 좋습니다.
 
@@ -40,29 +40,6 @@ Firestore 보안 규칙과 Firebase Auth 설정(회원가입 허용 여부)은 �
 - [ ] **404 페이지**: 현재 `<div>404 Not Found</div>`만 있고 레이아웃이 없습니다.
 - [ ] **(선택) 데이터 접근 분리**: Firestore 호출이 페이지마다 흩어져 있습니다. 서비스/훅으로 모으면 권한·오류 처리를 한곳에서 관리할 수 있습니다.
 
-## 취약점 패치 기록
+## 작업 기록
 
-### 2026-11-23
-
-`npm audit`: **27개(critical 2, high 다수) → 4개(high 4)**
-
-변경 내용:
-- `package.json`의 `overrides: { "brace-expansion": "2.0.2" }` 삭제. 이 고정 버전 자체가 취약한 범위(2.0.0 ~ 2.1.6)였고, `minimatch`가 업데이트되지 못하게 막고 있었습니다.
-- 자기참조 의존성 `"react-js-project-202503": "file:"` 삭제. 프로젝트가 자기 자신을 의존성으로 다시 설치하면서 의존성 트리가 꼬였습니다.
-- `react-router-dom` `^7.5.2` → `^7.18.6` (`react-router`, `turbo-stream` 취약점 해결)
-- `npm audit fix`로 lockfile 안의 버전 갱신: `vite` 6.4.6, `postcss` 8.5.33, `firebase` 11.10.0, `eslint` 9.39.5, `protobufjs`, `websocket-driver`, `rollup`, `picomatch` 등
-
-확인:
-- `npm run build` 성공
-- `npm run lint` 오류 19개로 패치 전과 같음 (새로 생긴 오류 없음)
-- 개발 서버에서 브라우저로 확인한 결과:
-  - 홈, 협회 소개, 교육 과정, 수강 신청, FAQ 모두 Firestore·Storage 데이터를 정상으로 불러옵니다.
-  - 내비게이션 링크로 페이지를 이동하면 새로고침 없이 전환됩니다.
-  - 로그인하지 않은 상태로 `/dashboard`에 들어가면 `/admin` 로그인 화면으로 이동합니다.
-  - 없는 경로에서는 404가 표시됩니다.
-  - 관리자 로그인 후 화면은 확인하지 않았습니다.
-
-남은 취약점 (`@grpc/grpc-js` < 1.13.6 → `@firebase/firestore` → `firebase`):
-- 최신 `firebase`(13.4.0)도 `@grpc/grpc-js ~1.9.0`을 사용하고 있어 업그레이드로는 해결되지 않습니다. `npm audit fix --force`가 제안하는 `firebase@9.14.0`은 메이저 버전을 낮추는 것이라 적용하지 않았습니다.
-- gRPC는 Firestore의 Node.js 환경에서만 쓰이고, 브라우저 번들(`dist/assets`)에는 들어가지 않는 것을 확인했습니다. 따라서 이 사이트에 실제로 영향은 없습니다.
-- Firebase가 grpc 의존성을 올리면 그때 `firebase`를 업데이트합니다.
+완료한 항목의 상세 내용(변경 코드, 목적, 확인 결과)은 [WORKLOG.md](WORKLOG.md)에 있습니다.

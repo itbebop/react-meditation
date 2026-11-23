@@ -1,633 +1,404 @@
-import React, { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  collection,
-  getDocs,
-  doc,
-  updateDoc,
-  addDoc,
-  deleteDoc,
-  serverTimestamp,
-  writeBatch,
-} from "firebase/firestore";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { db, storage } from "../../../firebase/firebase_config";
-import {
-  Edit,
-  Save,
   Plus,
-  Trash2,
-  X,
   GripVertical,
-  ArrowDownUp,
-  RefreshCcw,
-  ChevronDown,
+  Star,
   ChevronUp,
+  ChevronDown,
+  RefreshCcw,
+  Save,
 } from "lucide-react";
+import LectureEditPanel from "../../lecture/LectureEditPanel";
+import {
+  loadLectures,
+  deleteLecture,
+  saveOrderAndMain,
+} from "../../../firebase/lectures";
 
+const MAX_MAIN = 2;
+
+/**
+ * 수강 신청 강의 관리
+ * - 왼쪽: 강의 목록 (순서 변경, 홈 메인 지정)
+ * - 오른쪽: 선택한 강의의 수정 폼 + 공개 화면 미리보기
+ * 순서·메인 변경은 목록 위의 "변경사항 저장"으로 한 번에 저장합니다.
+ */
 export default function AdminRegistration() {
-  const [lectures, setLectures] = useState([]);
-  const [selectedLectures, setSelectedLectures] = useState([]);
-  const [editingLecture, setEditingLecture] = useState(null);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [previewImageId, setPreviewImageId] = useState(null);
-  const [imageSizes, setImageSizes] = useState({});
-  const [draggingLectureId, setDraggingLectureId] = useState(null);
-  const [hasOrderChanged, setHasOrderChanged] = useState(false);
-  const [modifiedLectures, setModifiedLectures] = useState([]);
-  const [mainLectures, setMainLectures] = useState([]);
-  const [hasMainChanged, setHasMainChanged] = useState(false);
+  const [status, setStatus] = useState("loading"); // loading | error | ready
+  const [loadError, setLoadError] = useState("");
+  const [lectures, setLectures] = useState([]); // 저장된 상태 (정렬됨)
+  const [order, setOrder] = useState([]); // 화면의 순서 (id 배열)
+  const [mainIds, setMainIds] = useState(new Set()); // 화면의 메인 지정
+  const [selectedId, setSelectedId] = useState(null); // 강의 id | "new" | null
+  const [panelVersion, setPanelVersion] = useState(0);
+  const [formDirty, setFormDirty] = useState(false);
+  const [dragId, setDragId] = useState(null);
+  const [dropIndex, setDropIndex] = useState(null);
+  const [listSaving, setListSaving] = useState(false);
+  const [notice, setNotice] = useState({ type: "", text: "" });
+
+  const applyLoaded = (data) => {
+    setLectures(data);
+    setOrder(data.map((l) => l.id));
+    setMainIds(new Set(data.filter((l) => l.isMain).map((l) => l.id)));
+  };
+
+  const reload = useCallback(async () => {
+    setStatus("loading");
+    try {
+      applyLoaded(await loadLectures());
+      setStatus("ready");
+    } catch (error) {
+      console.error("강의 목록 불러오기 실패:", error);
+      setLoadError(error.message);
+      setStatus("error");
+    }
+  }, []);
 
   useEffect(() => {
-    loadLectures();
-  }, []);
-  const [expandedDetails, setExpandedDetails] = useState({});
+    reload();
+  }, [reload]);
 
-  const loadLectures = async () => {
+  const byId = useMemo(() => new Map(lectures.map((l) => [l.id, l])), [lectures]);
+  const shown = order.map((id) => byId.get(id)).filter(Boolean);
+
+  const savedOrder = lectures.map((l) => l.id);
+  const savedMain = new Set(lectures.filter((l) => l.isMain).map((l) => l.id));
+  const orderChanged = order.join() !== savedOrder.join();
+  const mainChanged =
+    mainIds.size !== savedMain.size || [...mainIds].some((id) => !savedMain.has(id));
+  const listDirty = orderChanged || mainChanged;
+
+  // 저장하지 않은 변경이 있으면 페이지를 떠날 때 경고
+  useEffect(() => {
+    if (!listDirty && !formDirty) return;
+    const handler = (e) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [listDirty, formDirty]);
+
+  const flash = (type, text) => setNotice({ type, text });
+
+  const confirmLeaveForm = () =>
+    !formDirty || window.confirm("수정 중인 내용이 저장되지 않았습니다. 버리고 이동할까요?");
+
+  const select = (id) => {
+    if (id === selectedId) return;
+    if (!confirmLeaveForm()) return;
+    setFormDirty(false);
+    setSelectedId(id);
+    setNotice({ type: "", text: "" });
+  };
+
+  // --- 순서 변경 ---
+  const moveTo = (id, targetIndex) => {
+    setOrder((prev) => {
+      const from = prev.indexOf(id);
+      if (from < 0) return prev;
+      const next = prev.filter((x) => x !== id);
+      const to = Math.max(0, Math.min(targetIndex > from ? targetIndex - 1 : targetIndex, next.length));
+      next.splice(to, 0, id);
+      return next;
+    });
+  };
+  const moveBy = (id, delta) => {
+    const i = order.indexOf(id);
+    const target = i + delta;
+    if (target < 0 || target >= order.length) return;
+    setOrder((prev) => {
+      const next = [...prev];
+      [next[i], next[target]] = [next[target], next[i]];
+      return next;
+    });
+  };
+
+  // --- 메인 지정 ---
+  const toggleMain = (id) => {
+    setMainIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        if (next.size >= MAX_MAIN) {
+          flash("error", `홈 메인 강의는 최대 ${MAX_MAIN}개입니다. 다른 강의의 별을 먼저 해제하세요.`);
+          return prev;
+        }
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const saveList = async () => {
+    if (listSaving) return;
+    setListSaving(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "lectures"));
-      const lectureData = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-        isMain: doc.data().isMain || false,
-        createdAt: doc.data().createdAt?.toDate() || null,
-      }));
-
-      const sortedData = lectureData.sort((a, b) => {
-        const numA = parseInt(a.lectureId.split("-")[1], 10);
-        const numB = parseInt(b.lectureId.split("-")[1], 10);
-        return numA - numB;
+      await saveOrderAndMain(order, mainIds);
+      setLectures((prev) => {
+        const map = new Map(prev.map((l) => [l.id, l]));
+        return order
+          .map((id, index) => map.get(id) && { ...map.get(id), order: index, isMain: mainIds.has(id) })
+          .filter(Boolean);
       });
-
-      setLectures(sortedData);
-
-      const mainItems = sortedData.filter((lecture) => lecture.isMain);
-      setMainLectures(mainItems);
+      flash("ok", "순서와 메인 설정을 저장했습니다. 공개 화면에 바로 반영됩니다.");
     } catch (error) {
-      console.error("Error loading lectures:", error);
+      console.error("순서·메인 저장 실패:", error);
+      flash("error", `저장하지 못했습니다: ${error.message}`);
+    } finally {
+      setListSaving(false);
     }
   };
 
-  const handleCheckboxChange = (lectureId) => {
-    setSelectedLectures((prev) =>
-      prev.includes(lectureId)
-        ? prev.filter((id) => id !== lectureId)
-        : [...prev, lectureId]
+  const revertList = () => {
+    setOrder(savedOrder);
+    setMainIds(savedMain);
+    setNotice({ type: "", text: "" });
+  };
+
+  // --- 강의 저장·삭제 (편집 패널에서 호출) ---
+  const handleSaved = (saved, isNew) => {
+    setLectures((prev) =>
+      isNew ? [...prev, saved] : prev.map((l) => (l.id === saved.id ? { ...l, ...saved } : l))
     );
+    if (isNew) setOrder((prev) => [...prev, saved.id]);
+    setFormDirty(false);
+    setSelectedId(saved.id);
+    setPanelVersion((v) => v + 1);
+    flash("ok", isNew ? `'${saved.title}' 강의를 추가했습니다.` : `'${saved.title}' 강의를 저장했습니다.`);
   };
 
-  const handleEditClick = (lecture) => {
-    setEditingLecture(lecture);
-  };
-
-  const handleAddLecture = () => {
-    const newLectureId = `LEC-${lectures.length}`;
-    const newLecture = {
-      id: `temp-${Date.now()}`,
-      lectureId: newLectureId,
-      category: "정규 과정",
-      categoryColor: "#f59e0b",
-      title: "새 강의 제목",
-      lecturer: "강사 이름",
-      lectureNum: 0,
-      lectureTime: 0,
-      detail: "강의 상세 설명",
-      imgUrl: "",
-      isNew: true,
-      createdAt: null,
-      isMain: false,
-    };
-    setLectures((prev) => [...prev, newLecture]);
-    setEditingLecture(newLecture);
-  };
-
-  const handleDragStart = (lectureId) => {
-    setDraggingLectureId(lectureId);
-  };
-
-  const handleDrop = (targetLectureId) => {
-    if (!draggingLectureId || draggingLectureId === targetLectureId) return;
-
-    const draggedIndex = lectures.findIndex(
-      (lecture) => lecture.id === draggingLectureId
+  const handleDelete = async (lecture) => {
+    const ok = window.confirm(
+      `'${lecture.title}' 강의를 삭제할까요?\n\n삭제하면 되돌릴 수 없고 수강 신청 페이지에서 바로 사라집니다.\n(이 강의의 수강 신청 내역은 남아 있습니다)`
     );
-    const targetIndex = lectures.findIndex(
-      (lecture) => lecture.id === targetLectureId
-    );
-
-    const updatedLectures = [...lectures];
-    [updatedLectures[draggedIndex], updatedLectures[targetIndex]] = [
-      updatedLectures[targetIndex],
-      updatedLectures[draggedIndex],
-    ];
-
-    const modifiedIds = [];
-    updatedLectures.forEach((lecture, index) => {
-      const newId = `LEC-${index}`;
-      if (lecture.lectureId !== newId) {
-        modifiedIds.push(lecture.id);
-        lecture.lectureId = newId;
-      }
-    });
-
-    setLectures(updatedLectures);
-    setHasOrderChanged(modifiedIds.length > 0);
-    setModifiedLectures(modifiedIds);
-    setDraggingLectureId(null);
+    if (!ok) return;
+    try {
+      await deleteLecture(lecture.id);
+      setLectures((prev) => prev.filter((l) => l.id !== lecture.id));
+      setOrder((prev) => prev.filter((id) => id !== lecture.id));
+      setMainIds((prev) => {
+        const next = new Set(prev);
+        next.delete(lecture.id);
+        return next;
+      });
+      setFormDirty(false);
+      setSelectedId(null);
+      flash("ok", `'${lecture.title}' 강의를 삭제했습니다.`);
+    } catch (error) {
+      console.error("강의 삭제 실패:", error);
+      flash("error", `삭제하지 못했습니다: ${error.message}`);
+    }
   };
 
   const handleCancel = () => {
-    if (editingLecture?.isNew) {
-      setLectures((prev) => prev.filter((l) => l.id !== editingLecture.id));
-    }
-    setEditingLecture(null);
+    if (!confirmLeaveForm()) return;
+    setFormDirty(false);
+    setSelectedId(null);
   };
 
-  const handleDeleteSelected = async () => {
-    try {
-      await Promise.all(
-        selectedLectures.map((lectureId) =>
-          deleteDoc(doc(db, "lectures", lectureId))
-        )
-      );
-      setSelectedLectures([]);
-      loadLectures();
-    } catch (error) {
-      console.error("Error deleting lectures:", error);
-    }
-  };
-
-  const handleImageUpload = async (file, lectureId) => {
-    try {
-      const storageRef = ref(storage, `registration/${lectureId}/imageFile`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
-
-      return new Promise((resolve, reject) => {
-        uploadTask.on(
-          "state_changed",
-          (snapshot) => {
-            const progress = Math.round(
-              (snapshot.bytesTransferred / snapshot.totalBytes) * 100
-            );
-            setUploadProgress(progress);
-          },
-          (error) => reject(error),
-          async () => {
-            try {
-              const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-              resolve(downloadURL);
-            } catch (error) {
-              reject(error);
-            }
-          }
-        );
-      });
-    } catch (error) {
-      throw error;
-    }
-  };
-
-  const handleSaveEdit = async () => {
-    try {
-      let updatedLecture = { ...editingLecture };
-      delete updatedLecture.isNew;
-
-      if (editingLecture.newImageFile) {
-        const downloadURL = await handleImageUpload(
-          editingLecture.newImageFile,
-          updatedLecture.lectureId
-        );
-        updatedLecture.imgUrl = downloadURL;
-        delete updatedLecture.newImageFile;
-      }
-
-      let lectureData = {
-        lectureId: updatedLecture.lectureId,
-        category: updatedLecture.category,
-        categoryColor: updatedLecture.categoryColor,
-        title: updatedLecture.title,
-        lecturer: updatedLecture.lecturer,
-        lectureNum: Number(updatedLecture.lectureNum),
-        lectureTime: Number(updatedLecture.lectureTime),
-        detail: updatedLecture.detail,
-        imgUrl: updatedLecture.imgUrl,
-        createdAt: editingLecture.isNew
-          ? serverTimestamp()
-          : updatedLecture.createdAt,
-      };
-
-      if (editingLecture.isNew) {
-        const docRef = await addDoc(collection(db, "lectures"), lectureData);
-        lectureData.id = docRef.id;
-      } else {
-        await updateDoc(doc(db, "lectures", updatedLecture.id), lectureData);
-        lectureData.id = updatedLecture.id;
-      }
-
-      setLectures((prev) =>
-        prev.map((lec) =>
-          lec.id === editingLecture.id ? { ...lectureData } : lec
-        )
-      );
-      setEditingLecture(null);
-    } catch (error) {
-      console.error("강의 저장 실패:", error);
-      alert("저장에 실패했습니다: " + error.message);
-    }
-  };
-
-  const toggleImagePreview = (id) => {
-    setPreviewImageId((prevId) => (prevId === id ? null : id));
-    if (!imageSizes[id]) {
-      getImageSize(lectures.find((lecture) => lecture.id === id).imgUrl, id);
-    }
-  };
-
-  const getImageSize = (url, id) => {
-    const img = new Image();
-    img.onload = () => {
-      setImageSizes((prev) => ({
-        ...prev,
-        [id]: `${img.width} x ${img.height}`,
-      }));
-    };
-    img.src = url;
-  };
-
-  // 상세설명 토글 함수 추가
-  const toggleDetailExpand = (id) => {
-    setExpandedDetails((prev) => ({
-      ...prev,
-      [id]: !prev[id],
-    }));
-  };
-
-  const renderImageColumn = (lecture) => (
-    <td className="px-4 py-3">
-      {editingLecture?.id === lecture.id ? (
-        <div className="flex flex-col gap-2">
-          <input
-            type="file"
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (file) {
-                setEditingLecture({
-                  ...editingLecture,
-                  newImageFile: file,
-                  imgUrl: URL.createObjectURL(file),
-                });
-              }
-            }}
-            className="text-sm"
-          />
-          {editingLecture.imgUrl && (
-            <img
-              src={editingLecture.imgUrl}
-              alt="미리보기"
-              className="w-24 h-18 object-cover rounded"
-            />
-          )}
-        </div>
-      ) : lecture.imgUrl ? (
-        <div>
-          <button
-            onClick={() => toggleImagePreview(lecture.id)}
-            className="text-blue-500 hover:text-blue-700 text-sm underline"
-          >
-            {previewImageId === lecture.id ? "이미지 접기" : "이미지 보기"}
-          </button>
-          {previewImageId === lecture.id && (
-            <div className="mt-2">
-              <img
-                src={lecture.imgUrl}
-                alt="강의 이미지"
-                className="w-32 h-24 object-cover rounded"
-              />
-              {imageSizes[lecture.id] && (
-                <p className="text-gray-500 text-xs mt-1">
-                  {imageSizes[lecture.id]}
-                </p>
-              )}
-            </div>
-          )}
-        </div>
-      ) : (
-        <span className="text-gray-400 text-sm">없음</span>
-      )}
-    </td>
-  );
-
-  const renderEditableCell = (lecture, field, label, type = "text") => (
-    <td className="px-4 py-3">
-      {field === "lectureId" ? (
-        <span className="text-sm">{lecture[field] || label}</span>
-      ) : editingLecture?.id === lecture.id ? (
-        <input
-          type={type}
-          value={editingLecture[field]}
-          onChange={(e) =>
-            setEditingLecture({
-              ...editingLecture,
-              [field]:
-                type === "number" ? Number(e.target.value) : e.target.value,
-            })
-          }
-          className="border rounded p-1.5 w-full text-sm"
-        />
-      ) : (
-        <span className="text-sm">{lecture[field] || label}</span>
-      )}
-    </td>
-  );
-
-  const renderActionButtons = (lecture) => (
-    <td className="px-3 py-3">
-      <div className="flex gap-2 justify-center items-center">
-        {editingLecture?.id === lecture.id ? (
-          <>
-            <button
-              onClick={handleSaveEdit}
-              className="bg-green-500 text-white rounded p-2 hover:bg-green-600 transition-all"
-            >
-              <Save size={16} />
-            </button>
-            <button
-              onClick={handleCancel}
-              className="bg-red-500 text-white rounded p-2 hover:bg-red-600 transition-all"
-            >
-              <X size={16} />
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => handleEditClick(lecture)}
-            className="bg-blue-500 text-white rounded p-2 hover:bg-blue-600 transition-all"
-          >
-            <Edit size={16} />
-          </button>
-        )}
-        <button
-          draggable
-          onDragStart={() => handleDragStart(lecture.id)}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={() => handleDrop(lecture.id)}
-          className={`cursor-move ${
-            modifiedLectures.includes(lecture.id)
-              ? "text-red-500 hover:text-red-700"
-              : "text-gray-500 hover:text-gray-700"
-          }`}
-        >
-          <GripVertical size={20} />
-        </button>
-      </div>
-    </td>
-  );
-
-  // 상세 설명 렌더링 함수 수정 (토글 기능 추가)
-  const renderDetailCell = (lecture) => {
-    const maxLength = 50;
-    const isExpanded = expandedDetails[lecture.id];
-    const shouldTruncate = lecture.detail && lecture.detail.length > maxLength;
-
-    return (
-      <td className="px-4 py-3 min-w-[300px]">
-        {editingLecture?.id === lecture.id ? (
-          <textarea
-            value={editingLecture.detail}
-            onChange={(e) =>
-              setEditingLecture({ ...editingLecture, detail: e.target.value })
-            }
-            className="border rounded p-2 w-full text-sm"
-            rows="4"
-          />
-        ) : (
-          <div className="space-y-1">
-            <div className="text-sm leading-relaxed">
-              {/* 수정: expand 시 전체, 아니면 일부만 표시 */}
-              {isExpanded
-                ? lecture.detail || "상세 설명 없음"
-                : shouldTruncate
-                ? `${lecture.detail.slice(0, maxLength)}...`
-                : lecture.detail || "상세 설명 없음"}
-            </div>
-            {shouldTruncate && (
-              <button
-                onClick={() => toggleDetailExpand(lecture.id)}
-                className="flex items-center gap-1 text-blue-500 hover:text-blue-700 text-xs"
-              >
-                {isExpanded ? (
-                  <>
-                    <ChevronUp size={14} />
-                    접기
-                  </>
-                ) : (
-                  <>
-                    <ChevronDown size={14} />
-                    더보기
-                  </>
-                )}
-              </button>
-            )}
-          </div>
-        )}
-      </td>
-    );
-  };
-
-  const handleSaveOrder = async () => {
-    try {
-      const batchUpdates = lectures.map((lecture) =>
-        updateDoc(doc(db, "lectures", lecture.id), {
-          lectureId: lecture.lectureId,
-        })
-      );
-
-      await Promise.all(batchUpdates);
-      setHasOrderChanged(false);
-      setModifiedLectures([]);
-      loadLectures();
-      alert("순서가 성공적으로 저장되었습니다.");
-    } catch (error) {
-      console.error("순서 저장 실패:", error);
-      alert("순서 저장에 실패했습니다: " + error.message);
-    }
-  };
-
-  const countCheckedMain = () =>
-    lectures.filter((lecture) => lecture.isMain).length;
-
-  const handleMainCheck = (lectureId) => {
-    setLectures((prevLectures) => {
-      const currentlyChecked = prevLectures.filter((lecture) => lecture.isMain);
-      const targetLecture = prevLectures.find(
-        (lecture) => lecture.id === lectureId
-      );
-
-      if (currentlyChecked.length === 2 && !targetLecture.isMain) {
-        return prevLectures.map((lecture) => ({
-          ...lecture,
-          isMain: lecture.id === lectureId ? true : false,
-        }));
-      }
-
-      return prevLectures.map((lecture) =>
-        lecture.id === lectureId
-          ? { ...lecture, isMain: !lecture.isMain }
-          : lecture
-      );
-    });
-
-    setHasMainChanged(true);
-  };
-
-  const handleSaveMain = async () => {
-    try {
-      const batch = writeBatch(db);
-
-      lectures.forEach((lecture) => {
-        const lectureRef = doc(db, "lectures", lecture.id);
-        batch.update(lectureRef, {
-          isMain: lecture.isMain !== undefined ? lecture.isMain : false,
-        });
-      });
-
-      await batch.commit();
-      setHasMainChanged(false);
-      alert("메인 설정이 저장되었습니다");
-    } catch (error) {
-      console.error("저장 실패:", error);
-      alert("저장 실패: " + error.message);
-    }
-  };
+  const selectedLecture = selectedId && selectedId !== "new" ? byId.get(selectedId) : null;
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">강의 정보 관리</h2>
-        <div className="flex gap-2 flex-wrap">
-          <button
-            onClick={handleAddLecture}
-            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
-          >
-            <Plus size={18} />
-            강의 추가
-          </button>
-          <button
-            onClick={handleDeleteSelected}
-            className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
-            disabled={selectedLectures.length === 0}
-          >
-            <Trash2 size={18} />
-            선택 삭제
-          </button>
-          {hasOrderChanged && (
-            <button
-              onClick={handleSaveOrder}
-              className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
-            >
-              <ArrowDownUp size={18} />
-              순서 저장
-            </button>
-          )}
-          {hasMainChanged && (
-            <button
-              onClick={handleSaveMain}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
-            >
-              <RefreshCcw size={18} />
-              메인 변경
-            </button>
-          )}
+      <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
+        <div>
+          <h2 className="text-2xl font-bold">강의 정보 관리</h2>
+          <p className="text-sm text-gray-500">
+            수강 신청 페이지와 홈 화면에 보이는 강의를 관리합니다. 강의를 누르면 오른쪽에서 수정할 수 있습니다.
+          </p>
         </div>
+        <button
+          onClick={() => select("new")}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded flex items-center gap-2"
+        >
+          <Plus size={18} />
+          강의 추가
+        </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                  선택
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                  메인
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                  강의 ID
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                  카테고리
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                  카테고리 색상
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
-                  제목
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                  강사
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                  강의 횟수
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
-                  강의 시간(분)
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[300px]">
-                  상세 설명
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
-                  이미지 (800x600)
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                  생성일
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                  작업
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {lectures.map((lecture) => (
-                <tr key={lecture.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedLectures.includes(lecture.id)}
-                      onChange={() => handleCheckboxChange(lecture.id)}
-                      className="form-checkbox h-4 w-4 text-blue-600"
-                      disabled={lecture.isNew}
-                    />
-                  </td>
-                  <td className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={lecture.isMain || false}
-                      onChange={() => handleMainCheck(lecture.id)}
-                      className="form-checkbox h-4 w-4 text-yellow-500"
-                      disabled={countCheckedMain() >= 2 && !lecture.isMain}
-                    />
-                  </td>
-                  {renderEditableCell(lecture, "lectureId", "강의 ID")}
-                  {renderEditableCell(lecture, "category", "카테고리")}
-                  {renderEditableCell(lecture, "categoryColor", "색상코드")}
-                  {renderEditableCell(lecture, "title", "제목")}
-                  {renderEditableCell(lecture, "lecturer", "강사")}
-                  {renderEditableCell(lecture, "lectureNum", "0", "number")}
-                  {renderEditableCell(lecture, "lectureTime", "0", "number")}
-                  {renderDetailCell(lecture)}
-                  {renderImageColumn(lecture)}
-                  <td className="px-4 py-3">
-                    <span className="text-sm">
-                      {lecture.createdAt instanceof Date
-                        ? lecture.createdAt.toLocaleDateString()
-                        : "신규 항목"}
+      {notice.text && (
+        <div
+          className={`mb-4 rounded px-4 py-2 text-sm ${
+            notice.type === "error" ? "bg-red-50 text-red-700" : "bg-green-50 text-green-800"
+          }`}
+        >
+          {notice.text}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6 items-start">
+        {/* 강의 목록 */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="px-4 py-3 border-b">
+            <p className="text-sm font-semibold text-gray-700">강의 목록 ({shown.length}개)</p>
+            <p className="text-xs text-gray-500">
+              <GripVertical size={12} className="inline" /> 끌거나 화살표로 순서 변경 ·{" "}
+              <Star size={12} className="inline" /> 홈 메인 강의 (최대 {MAX_MAIN}개, 현재 {mainIds.size}개)
+            </p>
+          </div>
+
+          {listDirty && (
+            <div className="flex flex-wrap items-center gap-2 px-4 py-2 bg-amber-50 border-b border-amber-200 text-sm">
+              <span className="text-amber-800">
+                {[orderChanged && "순서", mainChanged && "메인"].filter(Boolean).join("·")} 변경이 저장되지 않았습니다.
+              </span>
+              <div className="ml-auto flex gap-2">
+                <button
+                  onClick={revertList}
+                  disabled={listSaving}
+                  className="flex items-center gap-1 text-gray-700 border border-gray-300 bg-white rounded px-3 py-1 hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <RefreshCcw size={14} /> 되돌리기
+                </button>
+                <button
+                  onClick={saveList}
+                  disabled={listSaving}
+                  className="flex items-center gap-1 text-white bg-blue-600 rounded px-3 py-1 hover:bg-blue-700 disabled:opacity-50"
+                >
+                  <Save size={14} /> {listSaving ? "저장 중…" : "변경사항 저장"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {status === "loading" && <p className="p-6 text-sm text-gray-500">불러오는 중…</p>}
+          {status === "error" && (
+            <div className="p-6 text-sm text-red-600">
+              강의 목록을 불러오지 못했습니다. ({loadError}){" "}
+              <button className="underline" onClick={reload}>
+                다시 시도
+              </button>
+            </div>
+          )}
+          {status === "ready" && shown.length === 0 && (
+            <p className="p-6 text-sm text-gray-500">등록된 강의가 없습니다. "강의 추가"로 첫 강의를 만드세요.</p>
+          )}
+
+          <ul onDragLeave={() => setDropIndex(null)}>
+            {shown.map((lecture, index) => {
+              const isMain = mainIds.has(lecture.id);
+              const active = selectedId === lecture.id;
+              return (
+                <li
+                  key={lecture.id}
+                  draggable
+                  onDragStart={(e) => {
+                    setDragId(lecture.id);
+                    e.dataTransfer.effectAllowed = "move";
+                  }}
+                  onDragEnd={() => {
+                    setDragId(null);
+                    setDropIndex(null);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setDropIndex(e.clientY < rect.top + rect.height / 2 ? index : index + 1);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (dragId != null && dropIndex != null) moveTo(dragId, dropIndex);
+                    setDragId(null);
+                    setDropIndex(null);
+                  }}
+                  className={`relative flex items-center gap-3 px-3 py-3 border-b last:border-b-0 ${
+                    active ? "bg-blue-50" : "hover:bg-gray-50"
+                  } ${dragId === lecture.id ? "opacity-40" : ""}`}
+                >
+                  {dropIndex === index && dragId && (
+                    <span className="absolute left-0 right-0 top-0 h-0.5 bg-blue-500" />
+                  )}
+                  {dropIndex === index + 1 && dragId && index === shown.length - 1 && (
+                    <span className="absolute left-0 right-0 bottom-0 h-0.5 bg-blue-500" />
+                  )}
+
+                  <span className="cursor-grab text-gray-400" title="끌어서 순서 변경" aria-hidden="true">
+                    <GripVertical size={18} />
+                  </span>
+                  <div className="flex flex-col">
+                    <button
+                      type="button"
+                      title="위로"
+                      aria-label={`${lecture.title} 위로 이동`}
+                      onClick={() => moveBy(lecture.id, -1)}
+                      disabled={index === 0}
+                      className="text-gray-400 hover:text-gray-700 disabled:opacity-20"
+                    >
+                      <ChevronUp size={16} />
+                    </button>
+                    <button
+                      type="button"
+                      title="아래로"
+                      aria-label={`${lecture.title} 아래로 이동`}
+                      onClick={() => moveBy(lecture.id, 1)}
+                      disabled={index === shown.length - 1}
+                      className="text-gray-400 hover:text-gray-700 disabled:opacity-20"
+                    >
+                      <ChevronDown size={16} />
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => select(lecture.id)}
+                    className="flex flex-1 min-w-0 items-center gap-3 text-left"
+                  >
+                    {lecture.imgUrl ? (
+                      <img src={lecture.imgUrl} alt="" className="h-12 w-16 flex-none rounded object-cover" />
+                    ) : (
+                      <span className="h-12 w-16 flex-none rounded bg-gray-100" />
+                    )}
+                    <span className="min-w-0">
+                      <span
+                        className="inline-block text-white text-[11px] font-semibold px-2 py-0.5 rounded-full"
+                        style={{ backgroundColor: lecture.categoryColor || "#f59e0b" }}
+                      >
+                        {lecture.category || "카테고리 없음"}
+                      </span>
+                      <span className="block truncate font-medium text-gray-800">{lecture.title}</span>
+                      <span className="block truncate text-xs text-gray-500">
+                        {lecture.lecturer || "강사 미정"} · {lecture.lectureNum ?? 0}강 · {lecture.lectureTime ?? 0}시간 ·{" "}
+                        {lecture.lectureId || "ID 없음"}
+                      </span>
                     </span>
-                  </td>
-                  {renderActionButtons(lecture)}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => toggleMain(lecture.id)}
+                    title={isMain ? "홈 메인에서 빼기" : "홈 메인으로 지정"}
+                    aria-label={isMain ? `${lecture.title} 홈 메인에서 빼기` : `${lecture.title} 홈 메인으로 지정`}
+                    aria-pressed={isMain}
+                    className={`p-1 rounded hover:bg-amber-50 ${isMain ? "text-amber-500" : "text-gray-300"}`}
+                  >
+                    <Star size={20} fill={isMain ? "currentColor" : "none"} />
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+
+        {/* 수정 패널 */}
+        <div className="xl:sticky xl:top-4">
+          {selectedId ? (
+            <LectureEditPanel
+              key={`${selectedId}-${panelVersion}`}
+              lecture={selectedLecture}
+              allLectures={lectures}
+              onSaved={handleSaved}
+              onCancel={handleCancel}
+              onDelete={handleDelete}
+              onDirtyChange={setFormDirty}
+            />
+          ) : (
+            <div className="bg-white rounded-lg shadow p-8 text-center text-sm text-gray-500">
+              왼쪽 목록에서 강의를 고르면 여기서 수정하고 공개 화면 모양을 미리 볼 수 있습니다.
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -33,6 +33,8 @@
    - 작은 수정이나 문서 변경을 하나씩 `main`에 머지하지 않습니다. 작업 브랜치에 모아 두었다가, 관련 수정이 마무리되고 빌드·화면 확인이 끝난 단위로 머지합니다.
    - 긴급한 보안·장애 수정이 아니면, 머지(배포) 전에 무엇이 운영에 반영되는지 정리해서 사용자에게 확인을 받습니다.
    - 배포 후에는 운영 사이트를 확인하고 결과를 WORKLOG에 기록합니다.
+9. **모든 소통과 기록은 한글로 씁니다.** 사용자에게 보내는 답변과 작업 중 안내 문장, 문서(CLAUDE.md, docs/), 커밋 메시지, PR 제목·본문, 코드 주석, 화면 문구 모두 해당합니다.
+   - 코드 식별자(변수·함수 이름), 명령어, 파일 경로, 라이브러리 이름처럼 원래 영어인 것은 그대로 둡니다.
 
 ## 명령어
 
@@ -74,9 +76,11 @@ src/
   main.jsx, App.jsx            # 진입점, 라우팅 전부 App.jsx에 정의
   firebase/firebase_config.js  # auth, db, storage 를 export (모든 Firebase 접근의 출발점), Emulator 연결
   firebase/introducePage.js    # 협회 소개 페이지 콘텐츠 읽기/저장, 에디터 이미지 업로드
+  firebase/lectures.js         # 강의(lectures) 읽기/저장/삭제, 순서·메인 일괄 저장, 강의 이미지 업로드
   components/
     Navbar.jsx, Footer.jsx     # 공개 레이아웃
     ui/                        # Button, Card (경로 별칭 @ui)
+    lecture/                   # 강의 카드(공개 화면·관리자 미리보기 공용), 정렬·ID 함수, 관리자 편집 패널
     editor/RichTextEditor.jsx  # TipTap 리치 텍스트 에디터 (관리자 화면에서 lazy 로드)
     editor/RichContent.jsx     # 에디터 HTML을 DOMPurify로 정리해 표시, style은 허용 속성만 (.rich-content 스타일은 index.css)
     editor/textStyles.js       # 글꼴·크기·색 목록, 웹폰트(@fontsource) 동적 로딩 - 공통 CSS에 직접 import 금지(한글 @font-face가 매우 큼)
@@ -108,7 +112,7 @@ src/
 
 | 컬렉션 | 용도 | 사용처 |
 |---|---|---|
-| `lectures` | 강의/수강신청 대상. 필드: `lectureId`(`LEC-<숫자>` 형식, 숫자로 정렬), `category`, `categoryColor`, `title`, `lecturer`, `lectureNum`, `lectureTime`, `detail`, `imgUrl`, `createdAt` | Home, Registration, AdminRegistraion |
+| `lectures` | 강의/수강신청 대상. 필드: `lectureId`(`LEC-<숫자>`, **고정 ID**), `order`(순서, 없으면 lectureId 숫자 순), `isMain`(홈 메인, 최대 2개), `category`, `categoryColor`, `title`, `lecturer`, `lectureNum`(강), `lectureTime`(**시간** 단위), `detail`, `imgUrl`, `createdAt`. 정렬은 `components/lecture/lectureUtils.js`의 `sortLectures` 사용 | Home, Registration, AdminRegistraion |
 | `alarms` | 수강 신청 내역. `email`, `name`, `phone`, `lectureKey`(lectures 문서 id), `lectureId`, `title`, `createdAt` | Registration(생성), Dashboard |
 | `faqs`, `faqCategories` | FAQ와 카테고리 | Faq, AdminFaq |
 | `user` | 관리자 계정 목록(`uid` 필드) | Login, User, Dashboard |
@@ -120,7 +124,8 @@ src/
 - `introduce/imageFile` — 협회 소개 이미지 (단일 파일 덮어쓰기)
 - `introduce/content/<시각>-<랜덤>.<확장자>` — 협회 소개 에디터 본문에 넣은 이미지
 - `lecture/imageFile` — 교육과정 소개 이미지 (단일 파일 덮어쓰기)
-- `registration/${lectureId}/imageFile` — 강의별 이미지
+- `registration/${lectureId}/imageFile` — 강의별 이미지 (예전 방식, 기존 강의가 사용 중)
+- `registration/<문서 id>/<시각>.<확장자>` — 새로 올리는 강의 이미지 (파일 이름이 매번 달라 덮어쓰기 없음)
 
 `storage.rules`: 읽기는 모두 허용, 쓰기는 로그인 사용자만. Firestore 규칙 파일은 저장소에 없습니다(콘솔에서 관리).
 `cors.json`은 Storage 버킷 CORS 설정용입니다.

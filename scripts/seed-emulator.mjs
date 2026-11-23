@@ -76,9 +76,46 @@ async function main() {
     }
   );
 
+  // 4. 강의(lectures) - 운영과 같은 구조(order 없음, 이미지 registration/LEC-n/imageFile)
+  const lectures = [
+    { lectureId: "LEC-1", category: "필수 과정", categoryColor: "#f59e0b", title: "샘플 강의 1", lecturer: "강사 가", lectureNum: 14, lectureTime: 21, isMain: true },
+    { lectureId: "LEC-2", category: "필수 과정", categoryColor: "#1C7244", title: "샘플 강의 2", lecturer: "강사 나", lectureNum: 3, lectureTime: 6, isMain: true },
+    { lectureId: "LEC-3", category: "필수 과정", categoryColor: "#f59e0b", title: "샘플 강의 3", lecturer: "강사 다", lectureNum: 3, lectureTime: 6, isMain: false },
+    { lectureId: "LEC-4", category: "선택 과정", categoryColor: "#FF4949", title: "샘플 강의 4", lecturer: "강사 라", lectureNum: 4, lectureTime: 4, isMain: false },
+    { lectureId: "LEC-5", category: "선택 과정", categoryColor: "#f59e0b", title: "샘플 강의 5", lecturer: "강사 마", lectureNum: 3, lectureTime: 3, isMain: false },
+  ];
+  for (const lec of lectures) {
+    const imgPath = `registration/${lec.lectureId}/imageFile`;
+    await call(
+      `${STORAGE}/upload/storage/v1/b/${bucket}/o?uploadType=media&name=${encodeURIComponent(imgPath)}`,
+      { method: "POST", headers: { "Content-Type": "image/png", Authorization: "Bearer owner" }, body: image }
+    );
+    const imgUrl = `${STORAGE}/v0/b/${bucket}/o/${encodeURIComponent(imgPath)}?alt=media`;
+    const detail = `${lec.title} 상세 설명 첫 줄입니다.\n두 번째 줄: 줄바꿈이 그대로 보이는지 확인합니다.\n세 번째 줄.`;
+    await call(`${FIRESTORE}/v1/projects/${PROJECT_ID}/databases/(default)/documents/lectures`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Bearer owner" },
+      body: JSON.stringify({
+        fields: {
+          lectureId: { stringValue: lec.lectureId },
+          category: { stringValue: lec.category },
+          categoryColor: { stringValue: lec.categoryColor },
+          title: { stringValue: lec.title },
+          lecturer: { stringValue: lec.lecturer },
+          lectureNum: { integerValue: String(lec.lectureNum) },
+          lectureTime: { integerValue: String(lec.lectureTime) },
+          detail: { stringValue: detail },
+          imgUrl: { stringValue: imgUrl },
+          isMain: { booleanValue: lec.isMain },
+          createdAt: { timestampValue: new Date().toISOString() },
+        },
+      }),
+    });
+  }
+
   console.log("Emulator 테스트 데이터 준비 완료");
   console.log(`- 관리자 계정: ${TEST_ADMIN.email} (비밀번호는 scripts/seed-emulator.mjs 참고)`);
-  console.log("- user 컬렉션 등록, introduce/imageFile 업로드");
+  console.log("- user 컬렉션 등록, introduce/imageFile 업로드, 샘플 강의 5개");
 }
 
 main().catch((e) => {

@@ -3,6 +3,7 @@ import { storage } from "../../../firebase/firebase_config";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Button } from "@ui/Button";
 import { Card, CardContent } from "@ui/Card";
+import PageContentSettings from "./PageContentSettings";
 
 export default function AdminLecture() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -84,7 +85,17 @@ export default function AdminLecture() {
 
   return (
     <div className="p-6">
-      <h2 className="text-2xl font-bold mb-6">교육과정 이미지 업로드</h2>
+      <h2 className="text-2xl font-bold mb-6">교육과정</h2>
+
+      <PageContentSettings
+        pageId="lecture"
+        pageName="교육 과정"
+        publicPath="/lecture"
+        imageSectionTitle="교육과정 이미지 업로드"
+        imageUrl={imageUrl}
+      />
+
+      <h3 className="text-xl font-bold mb-4">교육과정 이미지 업로드</h3>
 
       <Card className="mb-6">
         <div className="flex flex-col md:flex-row">

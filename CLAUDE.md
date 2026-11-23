@@ -75,7 +75,7 @@ npm run dev:emulator     # .env.emulator 를 읽어 Emulator에 연결된 개발
 src/
   main.jsx, App.jsx            # 진입점, 라우팅 전부 App.jsx에 정의
   firebase/firebase_config.js  # auth, db, storage 를 export (모든 Firebase 접근의 출발점), Emulator 연결
-  firebase/introducePage.js    # 협회 소개 페이지 콘텐츠 읽기/저장, 에디터 이미지 업로드
+  firebase/pageContent.js      # 협회 소개·교육 과정 페이지 콘텐츠 읽기/저장, 에디터 이미지 업로드 (pageId로 구분)
   firebase/lectures.js         # 강의(lectures) 읽기/저장/삭제, 순서·메인 일괄 저장, 강의 이미지 업로드
   components/
     Navbar.jsx, Footer.jsx     # 공개 레이아웃
@@ -116,13 +116,14 @@ src/
 | `alarms` | 수강 신청 내역. `email`, `name`, `phone`, `lectureKey`(lectures 문서 id), `lectureId`, `title`, `createdAt` | Registration(생성), Dashboard |
 | `faqs`, `faqCategories` | FAQ와 카테고리 | Faq, AdminFaq |
 | `user` | 관리자 계정 목록(`uid` 필드) | Login, User, Dashboard |
-| `pages` | 페이지별 콘텐츠. `introduce` 문서: `displayMode`(`image`/`text`), `contentHtml`, `updatedAt`. 문서가 없거나 읽기 실패 시 이미지 표시 | About, AdminIntroduce |
+| `pages` | 페이지별 콘텐츠. `introduce`(협회 소개)·`lecture`(교육 과정) 문서: `displayMode`(`image`/`text`), `contentHtml`, `updatedAt`. 문서가 없거나 읽기 실패 시 이미지 표시. 관리자 설정 화면은 공용 `admin/PageContentSettings.jsx` | About, Lecture, AdminIntroduce, AdminLecture |
 
 ### Storage 경로
 
 - `home/` — 홈 화면 이미지 (`home/${type}${n}.png` 형식 등, AdminHome에서 관리)
 - `introduce/imageFile` — 협회 소개 이미지 (단일 파일 덮어쓰기)
 - `introduce/content/<시각>-<랜덤>.<확장자>` — 협회 소개 에디터 본문에 넣은 이미지
+- `lecture/content/<시각>-<랜덤>.<확장자>` — 교육 과정 에디터 본문에 넣은 이미지
 - `lecture/imageFile` — 교육과정 소개 이미지 (단일 파일 덮어쓰기)
 - `registration/${lectureId}/imageFile` — 강의별 이미지 (예전 방식, 기존 강의가 사용 중)
 - `registration/<문서 id>/<시각>.<확장자>` — 새로 올리는 강의 이미지 (파일 이름이 매번 달라 덮어쓰기 없음)

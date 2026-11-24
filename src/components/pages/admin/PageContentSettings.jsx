@@ -119,7 +119,7 @@ export default function PageContentSettings({
           <RichTextEditor
             initialHtml={initialHtml}
             onChange={setContentHtml}
-            uploadImage={(file) => uploadPageContentImage(pageId, file)}
+            uploadImage={(file, options) => uploadPageContentImage(pageId, file, options)}
           />
         </Suspense>
 

@@ -35,6 +35,13 @@
    - 배포 후에는 운영 사이트를 확인하고 결과를 WORKLOG에 기록합니다.
 9. **모든 소통과 기록은 한글로 씁니다.** 사용자에게 보내는 답변과 작업 중 안내 문장, 문서(CLAUDE.md, docs/), 커밋 메시지, PR 제목·본문, 코드 주석, 화면 문구 모두 해당합니다.
    - 코드 식별자(변수·함수 이름), 명령어, 파일 경로, 라이브러리 이름처럼 원래 영어인 것은 그대로 둡니다.
+10. **사이트를 쓰는 분들(관리자·방문자)은 고연령이고 컴퓨터나 코딩을 전혀 모르는 분들이라는 점을 항상 고려합니다.** 화면을 만들거나 고칠 때 다음을 지킵니다.
+   - 화면 문구는 쉬운 우리말로 씁니다. 전문 용어(Firestore, Storage, 업로드 경로, URL, 캐시 등)나 영어 약어를 화면에 쓰지 않습니다.
+   - 글자와 버튼은 크고 또렷하게, 누를 곳이 분명하게 만듭니다. 아이콘만 있는 버튼 대신 글자를 함께 씁니다.
+   - 한 화면에서 할 일은 적게, 순서대로 보이게 합니다. 끌어다 놓기처럼 익숙하지 않은 조작에만 의존하지 않고 버튼으로도 할 수 있게 합니다.
+   - 되돌릴 수 없는 작업(삭제, 덮어쓰기, 홈에 반영 등)은 무엇이 어떻게 되는지 쉬운 말로 알려 주고 확인을 받습니다.
+   - 오류가 나면 무엇이 잘못됐고 어떻게 하면 되는지 쉬운 말로 알려 줍니다. 영어 오류 원문이나 오류 코드만 보여 주지 않습니다.
+   - 저장·업로드 중에는 진행 중임을, 끝나면 성공/실패를 눈에 잘 띄게 보여 줍니다.
 
 ## 명령어
 
@@ -84,8 +91,10 @@ src/
     editor/RichTextEditor.jsx  # TipTap 리치 텍스트 에디터 (관리자 화면에서 lazy 로드)
     editor/RichContent.jsx     # 에디터 HTML을 DOMPurify로 정리해 표시, style은 허용 속성만 (.rich-content 스타일은 index.css)
     editor/textStyles.js       # 글꼴·크기·색 목록, 웹폰트(@fontsource) 동적 로딩 - 공통 CSS에 직접 import 금지(한글 @font-face가 매우 큼)
+    imageCrop/                 # 사진 자르기 창(react-easy-crop)과 useImageCropper 훅 (창은 필요할 때만 불러옴)
     pages/                     # 공개 페이지: Home, About, Lecture, Registration, Faq
     pages/admin/               # 관리자: Login, ProtectedRoute, AdminLayout, Dashboard, User, Admin*
+  utils/imageResize.js         # 올리기 전 이미지 자동 줄이기·자르기(협회 소개·교육 과정 페이지 이미지, 에디터 사진, 강의 이미지). 기준은 RESIZE_PRESETS
   assets/                      # 이미지 (Footer 등에서 import)
 ```
 

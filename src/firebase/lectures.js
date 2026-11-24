@@ -22,9 +22,16 @@ import {
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { db, storage } from "./firebase_config";
 import { sortLectures } from "../components/lecture/lectureUtils";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  RAW_MAX_BYTES,
+  RESIZE_PRESETS,
+  prepareImageForUpload,
+} from "../utils/imageResize";
 
-export const LECTURE_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
-export const LECTURE_IMAGE_MAX_SIZE = 5 * 1024 * 1024; // 5MB
+export const LECTURE_IMAGE_TYPES = ACCEPTED_IMAGE_TYPES;
+// 저장할 때 자동으로 줄여서 올리므로 원본은 20MB까지 받음 (줄인 뒤 최종 파일은 5MB까지, utils/imageResize.js)
+export const LECTURE_IMAGE_MAX_SIZE = RAW_MAX_BYTES;
 
 export async function loadLectures() {
   const snap = await getDocs(collection(db, "lectures"));
@@ -46,7 +53,9 @@ export function newLectureId() {
   return doc(collection(db, "lectures")).id;
 }
 
-export function uploadLectureImage(docId, file, onProgress) {
+// 강의 이미지 올리기: 먼저 알맞은 크기로 줄인 뒤 올림 (줄이지 못하는 경우 ImageUploadError, 쉬운 문장)
+export async function uploadLectureImage(docId, originalFile, onProgress) {
+  const { file } = await prepareImageForUpload(originalFile, RESIZE_PRESETS.lectureImage);
   const ext = (file.name.split(".").pop() || "img").toLowerCase().replace(/[^a-z0-9]/g, "");
   const imageRef = ref(storage, `registration/${docId}/${Date.now()}.${ext}`);
   const task = uploadBytesResumable(imageRef, file, { contentType: file.type });

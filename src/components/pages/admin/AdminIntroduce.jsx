@@ -4,10 +4,23 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { Button } from "@ui/Button";
 import { Card, CardContent } from "@ui/Card";
 import PageContentSettings from "./PageContentSettings";
+import {
+  ACCEPTED_IMAGE_TYPES,
+  RAW_MAX_BYTES,
+  RESIZE_PRESETS,
+  ImageUploadError,
+  formatBytes,
+  prepareImageForUpload,
+  resizeSummary,
+} from "../../../utils/imageResize";
+import { useImageCropper } from "../../imageCrop/useImageCropper";
 
 export default function AdminIntroduce() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [cropArea, setCropArea] = useState(null); // 자르기 창에서 고른 영역 (없으면 자르지 않음)
+  const { askCrop, cropDialog } = useImageCropper();
   const [imageUrl, setImageUrl] = useState("");
   const [imageSize, setImageSize] = useState("");
   const [isImageExpanded, setIsImageExpanded] = useState(false); // 이미지 확장 상태 추가
@@ -29,22 +42,40 @@ export default function AdminIntroduce() {
       .catch(() => setImageUrl("")); // 이미지가 없는 경우 무시
   }, []);
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const file = event.target.files[0];
+    // 같은 사진을 다시 골라도 자르기 창이 다시 뜨도록 선택 칸을 비움 (고른 사진 이름은 안내 문구로 보여 줌)
+    event.target.value = "";
     if (!file) return;
 
-    const validTypes = ["image/jpeg", "image/png", "image/gif"];
-    if (!validTypes.includes(file.type)) {
-      setUploadStatus("허용된 이미지 파일 형식이 아닙니다. (jpeg, png, gif)");
+    if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
+      setSelectedFile(null); // 앞서 고른 파일이 대신 올라가지 않도록
+      setCropArea(null);
+      setUploadStatus("사진 파일(jpg, png, gif, webp)만 올릴 수 있습니다.");
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadStatus("파일 크기는 5MB 이하여야 합니다.");
+    // 큰 사진은 올릴 때 자동으로 줄이므로 원본은 20MB까지 받음
+    if (file.size > RAW_MAX_BYTES) {
+      setSelectedFile(null); // 앞서 고른 파일이 대신 올라가지 않도록
+      setCropArea(null);
+      setUploadStatus(`사진이 너무 큽니다(${formatBytes(file.size)}). 20MB 이하의 사진을 골라 주세요.`);
       return;
     }
 
+    // 자르기 창: 취소 / 그대로 쓰기 / 잘라서 쓰기 (GIF는 창 없이 그대로)
+    const result = await askCrop(file);
+    if (result.action === "cancel") {
+      setSelectedFile(null);
+      setCropArea(null);
+      setUploadStatus("사진 고르기를 취소했습니다.");
+      return;
+    }
     setSelectedFile(file);
+    setCropArea(result.action === "crop" ? result.crop : null);
+    setUploadStatus(
+      `고른 사진: ${file.name}${result.action === "crop" ? " (잘라서 올림)" : ""} — "이미지 업로드" 버튼을 눌러 주세요.`
+    );
   };
 
   const uploadImage = async () => {
@@ -52,26 +83,56 @@ export default function AdminIntroduce() {
       setUploadStatus("파일을 선택하세요.");
       return;
     }
+    if (uploading) return;
+    setUploading(true);
 
+    // 1. 올리기 전에 알맞은 크기로 줄이기 (utils/imageResize.js)
+    setUploadStatus(cropArea ? "사진을 자르고 크기를 줄이는 중입니다…" : "사진 크기를 줄이는 중입니다…");
+    let prepared;
+    try {
+      prepared = await prepareImageForUpload(selectedFile, {
+        ...RESIZE_PRESETS.pageImage,
+        crop: cropArea,
+      });
+    } catch (error) {
+      setUploadStatus(
+        error instanceof ImageUploadError
+          ? error.message
+          : "사진을 준비하지 못했습니다. 다른 사진으로 다시 시도해 주세요."
+      );
+      setUploading(false);
+      return;
+    }
+    const summary = resizeSummary(prepared);
+
+    // 2. 올리기
     const storageRef = ref(storage, "introduce/imageFile");
-    const uploadTask = uploadBytesResumable(storageRef, selectedFile);
+    const uploadTask = uploadBytesResumable(storageRef, prepared.file, {
+      contentType: prepared.file.type,
+    });
 
     uploadTask.on(
       "state_changed",
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        setUploadStatus(`협회소개 이미지 업로드 중: ${progress.toFixed(2)}%`);
+        setUploadStatus(`협회소개 이미지 업로드 중: ${progress.toFixed(0)}%`);
       },
       (error) => {
         console.error("업로드 오류:", error);
-        setUploadStatus(`협회소개 이미지 업로드 실패: ${error.message}`);
+        setUploadStatus(
+          "협회소개 이미지를 올리지 못했습니다. 인터넷 연결을 확인하고 다시 시도해 주세요."
+        );
+        setUploading(false);
       },
       () => {
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
           setImageUrl(downloadURL);
           getImageSize(downloadURL);
-          setUploadStatus(`협회소개 이미지 업로드 성공했습니다`);
+          setUploadStatus(
+            `협회소개 이미지 업로드 성공했습니다${summary ? `. ${summary}` : ""}`
+          );
+          setUploading(false);
         });
       }
     );
@@ -84,6 +145,7 @@ export default function AdminIntroduce() {
 
   return (
     <div className="p-6">
+      {cropDialog}
       <h2 className="text-2xl font-bold mb-6">협회소개</h2>
 
       <PageContentSettings
@@ -98,9 +160,17 @@ export default function AdminIntroduce() {
       <Card className="mb-6">
         <div className="flex flex-col md:flex-row">
           <CardContent className="flex-1">
-            <h3 className="text-lg font-semibold mb-4">파일 선택 (5MB 이하)</h3>
-            <input type="file" onChange={handleFileChange} className="mb-4" />
-            <Button onClick={uploadImage}>이미지 업로드</Button>
+            <h3 className="text-lg font-semibold mb-1">파일 선택 (20MB 이하)</h3>
+            <p className="text-sm text-gray-500 mb-4">큰 사진은 올릴 때 자동으로 알맞은 크기로 줄여서 올립니다.</p>
+            <input
+              type="file"
+              accept={ACCEPTED_IMAGE_TYPES.join(",")}
+              onChange={handleFileChange}
+              className="mb-4"
+            />
+            <Button onClick={uploadImage} disabled={uploading} className="disabled:opacity-50">
+              {uploading ? "올리는 중…" : "이미지 업로드"}
+            </Button>
 
             {uploadStatus && (
               <div className="mt-4 p-4 bg-gray-100 rounded">

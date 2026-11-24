@@ -93,6 +93,7 @@ src/
     editor/textStyles.js       # 글꼴·크기·색 목록, 웹폰트(@fontsource) 동적 로딩 - 공통 CSS에 직접 import 금지(한글 @font-face가 매우 큼)
     pages/                     # 공개 페이지: Home, About, Lecture, Registration, Faq
     pages/admin/               # 관리자: Login, ProtectedRoute, AdminLayout, Dashboard, User, Admin*
+  utils/imageResize.js         # 올리기 전 이미지 자동 줄이기(협회 소개·교육 과정 페이지 이미지, 에디터 사진). 기준은 RESIZE_PRESETS
   assets/                      # 이미지 (Footer 등에서 import)
 ```
 

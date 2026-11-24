@@ -45,9 +45,13 @@ export async function savePageContent(pageId, { displayMode, contentHtml }) {
 }
 
 // 에디터 본문 사진: 올리기 전에 알맞은 크기로 줄임(가로 최대 1600px, utils/imageResize.js)
-export async function uploadPageContentImage(pageId, originalFile) {
+// crop: 자르기 창에서 고른 영역 (없으면 자르지 않음)
+export async function uploadPageContentImage(pageId, originalFile, { crop } = {}) {
   if (!PAGE_IDS.includes(pageId)) throw new Error(`알 수 없는 페이지: ${pageId}`);
-  const { file } = await prepareImageForUpload(originalFile, RESIZE_PRESETS.editorImage);
+  const { file } = await prepareImageForUpload(originalFile, {
+    ...RESIZE_PRESETS.editorImage,
+    crop,
+  });
   const ext = (file.name.split(".").pop() || "img").toLowerCase().replace(/[^a-z0-9]/g, "");
   const name = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
   const imageRef = ref(storage, `${pageId}/content/${name}`);

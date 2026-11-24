@@ -13,11 +13,14 @@ import {
   prepareImageForUpload,
   resizeSummary,
 } from "../../../utils/imageResize";
+import { useImageCropper } from "../../imageCrop/useImageCropper";
 
 export default function AdminLecture() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [cropArea, setCropArea] = useState(null); // 자르기 창에서 고른 영역 (없으면 자르지 않음)
+  const { askCrop, cropDialog } = useImageCropper();
   const [imageUrl, setImageUrl] = useState("");
   const [imageSize, setImageSize] = useState("");
   const [isImageExpanded, setIsImageExpanded] = useState(false); // 이미지 확장 상태 추가
@@ -41,12 +44,15 @@ export default function AdminLecture() {
       .catch(() => setImageUrl("")); // 이미지가 없는 경우 무시
   }, []);
 
-  const handleFileChange = (event) => {
+  const handleFileChange = async (event) => {
     const file = event.target.files[0];
+    // 같은 사진을 다시 골라도 자르기 창이 다시 뜨도록 선택 칸을 비움 (고른 사진 이름은 안내 문구로 보여 줌)
+    event.target.value = "";
     if (!file) return;
 
     if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
       setSelectedFile(null); // 앞서 고른 파일이 대신 올라가지 않도록
+      setCropArea(null);
       setUploadStatus("사진 파일(jpg, png, gif, webp)만 올릴 수 있습니다.");
       return;
     }
@@ -54,13 +60,24 @@ export default function AdminLecture() {
     // 큰 사진은 올릴 때 자동으로 줄이므로 원본은 20MB까지 받음
     if (file.size > RAW_MAX_BYTES) {
       setSelectedFile(null); // 앞서 고른 파일이 대신 올라가지 않도록
+      setCropArea(null);
       setUploadStatus(`사진이 너무 큽니다(${formatBytes(file.size)}). 20MB 이하의 사진을 골라 주세요.`);
       return;
     }
 
-    setUploadStatus("");
-
+    // 자르기 창: 취소 / 그대로 쓰기 / 잘라서 쓰기 (GIF는 창 없이 그대로)
+    const result = await askCrop(file);
+    if (result.action === "cancel") {
+      setSelectedFile(null);
+      setCropArea(null);
+      setUploadStatus("사진 고르기를 취소했습니다.");
+      return;
+    }
     setSelectedFile(file);
+    setCropArea(result.action === "crop" ? result.crop : null);
+    setUploadStatus(
+      `고른 사진: ${file.name}${result.action === "crop" ? " (잘라서 올림)" : ""} — "이미지 업로드" 버튼을 눌러 주세요.`
+    );
   };
 
   const uploadImage = async () => {
@@ -72,10 +89,13 @@ export default function AdminLecture() {
     setUploading(true);
 
     // 1. 올리기 전에 알맞은 크기로 줄이기 (utils/imageResize.js)
-    setUploadStatus("사진 크기를 줄이는 중입니다…");
+    setUploadStatus(cropArea ? "사진을 자르고 크기를 줄이는 중입니다…" : "사진 크기를 줄이는 중입니다…");
     let prepared;
     try {
-      prepared = await prepareImageForUpload(selectedFile, RESIZE_PRESETS.pageImage);
+      prepared = await prepareImageForUpload(selectedFile, {
+        ...RESIZE_PRESETS.pageImage,
+        crop: cropArea,
+      });
     } catch (error) {
       setUploadStatus(
         error instanceof ImageUploadError
@@ -127,6 +147,7 @@ export default function AdminLecture() {
 
   return (
     <div className="p-6">
+      {cropDialog}
       <h2 className="text-2xl font-bold mb-6">교육과정</h2>
 
       <PageContentSettings

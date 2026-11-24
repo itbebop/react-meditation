@@ -91,11 +91,12 @@ function renameFile(name, ext) {
  * 올리기 전에 이미지를 알맞은 크기로 줄입니다.
  *
  * @param {File} file
- * @param {{maxLongSide?: number, maxWidth?: number}} options
- * @returns {Promise<{file: File, resized: boolean, originalBytes: number, finalBytes: number, width?: number, height?: number}>}
+ * @param {{maxLongSide?: number, maxWidth?: number, crop?: {x: number, y: number, width: number, height: number}}} options
+ *   crop: 자를 영역(방향 정보를 반영한 원본 사진 기준 픽셀). 자르기 창(ImageCropDialog)에서 받음. 없으면 자르지 않음
+ * @returns {Promise<{file: File, resized: boolean, cropped: boolean, originalBytes: number, finalBytes: number, width?: number, height?: number}>}
  * @throws {ImageUploadError} 관리자에게 그대로 보여 줄 수 있는 쉬운 문장
  */
-export async function prepareImageForUpload(file, { maxLongSide, maxWidth } = {}) {
+export async function prepareImageForUpload(file, { maxLongSide, maxWidth, crop } = {}) {
   if (!file) throw new ImageUploadError("사진을 먼저 골라 주세요.");
   if (!ACCEPTED_IMAGE_TYPES.includes(file.type)) {
     throw new ImageUploadError("사진 파일(jpg, png, gif, webp)만 올릴 수 있습니다.");
@@ -112,7 +113,7 @@ export async function prepareImageForUpload(file, { maxLongSide, maxWidth } = {}
         `이 사진은 크기를 줄일 수 없어서 올릴 수 없습니다(${formatBytes(file.size)}). 5MB 이하의 사진을 골라 주세요.`
       );
     }
-    return { file, resized: false, originalBytes: file.size, finalBytes: file.size, ...extra };
+    return { file, resized: false, cropped: false, originalBytes: file.size, finalBytes: file.size, ...extra };
   };
 
   // 움직이는 그림(GIF)은 줄이면 움직임이 사라지므로 그대로
@@ -122,11 +123,31 @@ export async function prepareImageForUpload(file, { maxLongSide, maxWidth } = {}
   try {
     decoded = await decode(file);
   } catch {
+    if (crop) throw new ImageUploadError("사진을 자르지 못했습니다. 다른 사진으로 다시 시도해 주세요.");
     return keepOriginal();
   }
 
   try {
-    const { width, height } = decoded;
+    let source = decoded.source;
+    let { width, height } = decoded;
+
+    // 자르기: 고른 영역만 먼저 떼어 냄 (사진 전체를 고른 경우는 자르지 않은 것으로 봄)
+    const area = normalizeCrop(crop, width, height);
+    const cropped = !!area;
+    if (area) {
+      // 떼어 낸 영역도 브라우저 처리 한계를 넘지 않게
+      const s0 = Math.min(1, Math.sqrt(MAX_CANVAS_PIXELS / (area.width * area.height)));
+      const piece = document.createElement("canvas");
+      piece.width = Math.max(1, Math.round(area.width * s0));
+      piece.height = Math.max(1, Math.round(area.height * s0));
+      const pg = piece.getContext("2d");
+      pg.imageSmoothingQuality = "high";
+      pg.drawImage(source, area.x, area.y, area.width, area.height, 0, 0, piece.width, piece.height);
+      source = piece;
+      width = piece.width;
+      height = piece.height;
+    }
+
     let scale = 1;
     if (maxLongSide) scale = Math.min(scale, maxLongSide / Math.max(width, height));
     if (maxWidth) scale = Math.min(scale, maxWidth / width);
@@ -137,7 +158,7 @@ export async function prepareImageForUpload(file, { maxLongSide, maxWidth } = {}
     const dstH = Math.max(1, Math.round(height * scale));
 
     const isPhoto = file.type === "image/jpeg";
-    const canvas = drawScaled(decoded.source, width, height, dstW, dstH, isPhoto);
+    const canvas = drawScaled(source, width, height, dstW, dstH, isPhoto);
 
     let blob;
     let ext;
@@ -152,10 +173,13 @@ export async function prepareImageForUpload(file, { maxLongSide, maxWidth } = {}
         ext = "png";
       }
     }
-    if (!blob) return keepOriginal({ width, height });
+    if (!blob) {
+      if (cropped) throw new ImageUploadError("사진을 자르지 못했습니다. 다른 사진으로 다시 시도해 주세요.");
+      return keepOriginal({ width, height });
+    }
 
-    // 줄인 결과가 더 크면(이미 작은 이미지) 원본 사용
-    if (blob.size >= file.size) return keepOriginal({ width, height });
+    // 줄인 결과가 더 크면(이미 작은 이미지) 원본 사용. 자른 경우는 내용이 달라서 그대로 사용
+    if (!cropped && blob.size >= file.size) return keepOriginal({ width, height });
 
     if (blob.size > FINAL_MAX_BYTES) {
       throw new ImageUploadError(
@@ -170,6 +194,7 @@ export async function prepareImageForUpload(file, { maxLongSide, maxWidth } = {}
     return {
       file: out,
       resized: true,
+      cropped,
       originalBytes: file.size,
       finalBytes: out.size,
       width: dstW,
@@ -178,14 +203,29 @@ export async function prepareImageForUpload(file, { maxLongSide, maxWidth } = {}
   } catch (error) {
     if (error instanceof ImageUploadError) throw error;
     console.error("이미지 줄이기 실패:", error);
+    if (crop) throw new ImageUploadError("사진을 자르지 못했습니다. 다른 사진으로 다시 시도해 주세요.");
     return keepOriginal();
   } finally {
     decoded.close();
   }
 }
 
+// 자를 영역을 사진 안으로 맞추고, 사진 전체(또는 거의 전체)면 null
+function normalizeCrop(crop, width, height) {
+  if (!crop || !(crop.width > 0) || !(crop.height > 0)) return null;
+  const x = Math.max(0, Math.min(width - 1, Math.round(crop.x)));
+  const y = Math.max(0, Math.min(height - 1, Math.round(crop.y)));
+  const w = Math.max(1, Math.min(width - x, Math.round(crop.width)));
+  const h = Math.max(1, Math.min(height - y, Math.round(crop.height)));
+  if (w >= width - 2 && h >= height - 2) return null;
+  return { x, y, width: w, height: h };
+}
+
 // 결과 안내 문장 (예: "사진을 알맞은 크기로 줄였습니다 (3.2MB → 0.4MB)")
 export function resizeSummary(result) {
+  if (result?.cropped) {
+    return `사진을 잘라서 알맞은 크기로 줄였습니다 (${formatBytes(result.originalBytes)} → ${formatBytes(result.finalBytes)})`;
+  }
   if (!result?.resized) return "";
   return `사진을 알맞은 크기로 줄였습니다 (${formatBytes(result.originalBytes)} → ${formatBytes(result.finalBytes)})`;
 }

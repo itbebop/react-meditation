@@ -91,9 +91,10 @@ src/
     editor/RichTextEditor.jsx  # TipTap 리치 텍스트 에디터 (관리자 화면에서 lazy 로드)
     editor/RichContent.jsx     # 에디터 HTML을 DOMPurify로 정리해 표시, style은 허용 속성만 (.rich-content 스타일은 index.css)
     editor/textStyles.js       # 글꼴·크기·색 목록, 웹폰트(@fontsource) 동적 로딩 - 공통 CSS에 직접 import 금지(한글 @font-face가 매우 큼)
+    imageCrop/                 # 사진 자르기 창(react-easy-crop)과 useImageCropper 훅 (창은 필요할 때만 불러옴)
     pages/                     # 공개 페이지: Home, About, Lecture, Registration, Faq
     pages/admin/               # 관리자: Login, ProtectedRoute, AdminLayout, Dashboard, User, Admin*
-  utils/imageResize.js         # 올리기 전 이미지 자동 줄이기(협회 소개·교육 과정 페이지 이미지, 에디터 사진). 기준은 RESIZE_PRESETS
+  utils/imageResize.js         # 올리기 전 이미지 자동 줄이기·자르기(협회 소개·교육 과정 페이지 이미지, 에디터 사진). 기준은 RESIZE_PRESETS
   assets/                      # 이미지 (Footer 등에서 import)
 ```
 

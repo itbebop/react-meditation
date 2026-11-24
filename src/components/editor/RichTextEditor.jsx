@@ -15,6 +15,7 @@ import {
   RAW_MAX_BYTES,
   ImageUploadError,
 } from "../../utils/imageResize";
+import { useImageCropper } from "../imageCrop/useImageCropper";
 import {
   FONT_FAMILIES,
   FONT_SIZES,
@@ -55,7 +56,8 @@ const MAX_IMAGE_SIZE = RAW_MAX_BYTES;
  * props
  * - initialHtml: 처음 보여줄 HTML
  * - onChange(html): 내용이 바뀔 때마다 호출. 비어 있으면 "" 전달
- * - uploadImage(file): 이미지를 업로드하고 URL을 돌려주는 함수 (Promise<string>)
+ * - uploadImage(file, { crop }): 이미지를 업로드하고 URL을 돌려주는 함수 (Promise<string>)
+ *     crop은 자르기 창에서 고른 영역(자르지 않으면 undefined)
  *
  * 이미지는 툴바 버튼, 붙여넣기(Ctrl+V), 끌어다 놓기로 넣을 수 있습니다.
  * 이미지 파일은 uploadImage로 Storage에 올리고, 본문에는 URL만 들어갑니다.
@@ -64,6 +66,7 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(0);
   const [message, setMessage] = useState("");
+  const { askCrop, cropDialog } = useImageCropper();
 
   // handlePaste/handleDrop은 에디터 생성 시 한 번 등록되므로 최신 함수를 ref로 참조
   const insertFilesRef = useRef(null);
@@ -112,7 +115,8 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
     if (!editor) return;
     // 끌어다 놓은 경우 첫 사진은 놓은 위치에, 그다음 사진부터는 바로 앞 사진 뒤에 넣음
     let dropAt = position;
-    for (const file of files) {
+    const total = files.length;
+    for (const [index, file] of files.entries()) {
       if (!ALLOWED_IMAGE_TYPES.includes(file.type)) {
         setMessage(`사진 파일(jpg, png, gif, webp)만 넣을 수 있습니다: ${file.name}`);
         continue;
@@ -121,10 +125,15 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
         setMessage(`20MB 이하 사진만 넣을 수 있습니다: ${file.name}`);
         continue;
       }
+      // 자르기 창: 취소하면 이 사진은 넣지 않음 (GIF는 창 없이 그대로)
+      const choice = await askCrop(file, index, total);
+      if (choice.action === "cancel") continue;
       setUploading((n) => n + 1);
       setMessage("");
       try {
-        const url = await uploadImage(file);
+        const url = await uploadImage(file, {
+          crop: choice.action === "crop" ? choice.crop : undefined,
+        });
         // 현재 위치(선택된 사진이 있으면 그 뒤)에 넣음.
         // setImage는 방금 넣은 사진이 선택된 상태면 그 사진을 바꿔 버려서, 여러 장을 넣으면 마지막 한 장만 남았음
         const at = typeof dropAt === "number" ? dropAt : editor.state.selection.to;
@@ -203,6 +212,7 @@ export default function RichTextEditor({ initialHtml, onChange, uploadImage }) {
 
   return (
     <div className="border border-gray-300 rounded-lg bg-white">
+      {cropDialog}
       <div className="flex flex-wrap items-center gap-1 border-b border-gray-200 p-2 sticky top-0 bg-white z-10 rounded-t-lg">
         <ToolButton title="본문" active={state.paragraph} onClick={() => c().setParagraph().run()}>
           <Pilcrow size={16} />

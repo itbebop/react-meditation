@@ -6,6 +6,38 @@
 
 ---
 
+## 2026-11-25 — 수강 신청 관리(강의 이미지) 업로드 시 자동 줄이기
+
+- 브랜치: `feat/image-resize` (협회 소개·교육 과정 자동 줄이기·자르기에 이어서, 아직 머지·배포 안 함)
+- 사용자 요청: "어드민에 수강 신청 부분에도 이미지 첨부할 때 리사이징 기능을 넣고 같이(PR)"
+
+### 배경 / 목적
+- 관리자 "수강 신청" 화면(`AdminRegistraion` → `LectureEditPanel`)의 강의 이미지는 원본을 그대로 올렸고, 5MB가 넘는 휴대폰 사진은 아예 올릴 수 없었음.
+- 강의 이미지는 홈 메인 카드(PC 폭 약 600px)와 수강 신청 카드에 `object-cover`로 잘려서 보이므로 큰 원본이 필요 없음. 협회 소개·교육 과정과 같은 `utils/imageResize.js`를 써서 올리기 전에 줄임.
+- 요청 범위가 "리사이징"이라 자르기 창은 넣지 않음(카드가 이미 화면에 맞게 잘라서 보여 줌).
+
+### 변경 내용
+| 파일 | 이전 | 이후 |
+|---|---|---|
+| `src/utils/imageResize.js` | 기준: `pageImage`, `editorImage` | `lectureImage: { maxLongSide: 1200 }` 추가 (권장 800×600의 약 1.5배) |
+| `src/firebase/lectures.js` | `LECTURE_IMAGE_MAX_SIZE` 5MB, 원본 그대로 업로드 | 원본 20MB까지(`RAW_MAX_BYTES`), `uploadLectureImage`가 `prepareImageForUpload(file, RESIZE_PRESETS.lectureImage)`로 줄인 파일을 올림(확장자·`contentType`도 줄인 파일 기준). 허용 형식은 `ACCEPTED_IMAGE_TYPES`와 같은 값 |
+| `src/components/lecture/LectureEditPanel.jsx` | 안내 "5MB 이하", 오류 "5MB 이하 이미지만…" | 안내 "20MB 이하 · 큰 사진은 저장할 때 자동으로 줄여서 올립니다", 오류 "20MB 이하 이미지만…". 줄이기 실패(`ImageUploadError`)는 "저장하지 못했습니다:" 없이 쉬운 문장 그대로 표시 |
+
+- Storage 경로(`registration/<문서 id>/<시각>.<확장자>`), Firestore 필드는 바꾸지 않음. 저장 버튼의 진행 표시도 그대로.
+- 규칙은 기존과 같음: JPEG → JPEG(0.85), PNG·WebP → WebP(0.9, 안 되면 PNG), GIF 그대로, 줄인 결과가 더 크면 원본, 최종 5MB 초과 시 오류.
+
+### 확인 / 결과 (로컬 Emulator, `vite-emulator`)
+- 4000×3000 JPEG(0.97MB)를 "샘플 강의 1"에 넣고 저장 → Storage `registration/<문서 id>/<시각>.jpg`, **1200×900, 166KB, image/jpeg**
+- 3000×2000 PNG(135KB)를 "샘플 강의 2"에 저장 → **1200×800, 27KB, image/webp**
+- 공개 `/registration` 화면에서 줄인 이미지가 카드에 정상 표시
+- `npm run lint`: 기존과 같은 16건(새 오류 없음), `npm run build` 성공(메인 JS gzip 312.70KB)
+- 확인 못 한 것: 실제 휴대폰 사진(방향 정보) — 협회 소개 화면에서 같은 함수로 확인했음. 운영 사이트·실제 관리자 계정에서는 아직 확인 안 함.
+
+### 남은 일
+- 머지(=운영 배포) 전 사용자 확인 필요.
+
+---
+
 ## 2026-11-24 — 협회 소개·교육 과정 이미지 업로드 시 자르기 기능 추가
 
 - 브랜치: `feat/image-resize` (자동 줄이기 `278c0ba`에 이어서, 아직 머지·배포 안 함)

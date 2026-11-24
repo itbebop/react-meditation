@@ -10,6 +10,7 @@ import {
   createLecture,
   updateLecture,
 } from "../../firebase/lectures";
+import { ImageUploadError } from "../../utils/imageResize";
 
 // 배지 색 후보: 사이트 색 + 기존 기본색
 const PRESET_COLORS = ["#f59e0b", "#1C7244", "#4CAF4F", "#D9AE46", "#3C493C", "#FF4949", "#2563EB", "#717171"];
@@ -111,7 +112,7 @@ export default function LectureEditPanel({
       return;
     }
     if (file.size > LECTURE_IMAGE_MAX_SIZE) {
-      setImageError("5MB 이하 이미지만 올릴 수 있습니다.");
+      setImageError("20MB 이하 이미지만 올릴 수 있습니다.");
       return;
     }
     setImageError("");
@@ -163,7 +164,11 @@ export default function LectureEditPanel({
       }
     } catch (error) {
       console.error("강의 저장 실패:", error);
-      setSaveError(`저장하지 못했습니다: ${error.message}`);
+      setSaveError(
+        error instanceof ImageUploadError
+          ? error.message
+          : `저장하지 못했습니다: ${error.message}`
+      );
       savingRef.current = false;
       setSaving(false);
       setProgress(null);
@@ -286,7 +291,7 @@ export default function LectureEditPanel({
 
         <div className="sm:col-span-2">
           <label className="block text-sm font-medium text-gray-700 mb-1">
-            강의 이미지 <span className="font-normal text-gray-400">(가로 4:3 권장, 예: 800×600 · jpg·png·gif·webp · 5MB 이하)</span>
+            강의 이미지 <span className="font-normal text-gray-400">(가로 4:3 권장, 예: 800×600 · jpg·png·gif·webp · 20MB 이하 · 큰 사진은 저장할 때 자동으로 줄여서 올립니다)</span>
           </label>
           <div
             className="flex items-center gap-4 border-2 border-dashed border-gray-300 rounded-lg p-3 cursor-pointer hover:bg-gray-50"

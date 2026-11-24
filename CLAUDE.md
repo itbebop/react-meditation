@@ -94,7 +94,7 @@ src/
     imageCrop/                 # 사진 자르기 창(react-easy-crop)과 useImageCropper 훅 (창은 필요할 때만 불러옴)
     pages/                     # 공개 페이지: Home, About, Lecture, Registration, Faq
     pages/admin/               # 관리자: Login, ProtectedRoute, AdminLayout, Dashboard, User, Admin*
-  utils/imageResize.js         # 올리기 전 이미지 자동 줄이기·자르기(협회 소개·교육 과정 페이지 이미지, 에디터 사진). 기준은 RESIZE_PRESETS
+  utils/imageResize.js         # 올리기 전 이미지 자동 줄이기·자르기(협회 소개·교육 과정 페이지 이미지, 에디터 사진, 강의 이미지). 기준은 RESIZE_PRESETS
   assets/                      # 이미지 (Footer 등에서 import)
 ```
 

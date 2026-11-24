@@ -237,4 +237,6 @@ export const RESIZE_PRESETS = {
   // 에디터 본문 사진: 글 폭(최대 768px)에 보임. 고해상도 화면을 위해 약 2배.
   // 긴 변 기준으로 하면 세로로 긴 안내 이미지(예: 1448×10240)가 폭 226px로 줄어 글자를 못 읽으므로 가로 기준
   editorImage: { maxWidth: 1600 },
+  // 강의 이미지: 홈 카드(PC에서 폭 약 600px)·수강신청 카드에 잘려서(object-cover) 보임. 권장 4:3(800×600)의 약 1.5배
+  lectureImage: { maxLongSide: 1200 },
 };
